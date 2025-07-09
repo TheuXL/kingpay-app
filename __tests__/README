@@ -1,0 +1,113 @@
+# Guia de Execução de Testes
+
+## Arquitetura dos Testes
+
+Os testes neste projeto são projetados para trabalhar diretamente com os serviços do aplicativo, garantindo que:
+
+1. Todos os testes usam a mesma infraestrutura que o aplicativo real
+2. Não há conexão direta com o Supabase, todos os testes usam os serviços do app
+3. Os testes utilizam dados reais, não mockados
+4. As variáveis de ambiente são obtidas através do app
+
+### Estrutura de Autenticação
+
+Para os testes que requerem autenticação, implementamos um helper (`__tests__/helpers/auth-helper.js`) que:
+- Faz login usando o `authService` do app
+- Configura automaticamente o token de acesso no cliente Supabase
+- Evita a configuração manual de variáveis de ambiente
+
+## Padrões para Execução de Testes
+
+### 1. Executar todos os testes
+```
+npm run test:all
+```
+
+### 2. Executar testes por categoria
+```
+npm run test:auth         # Testes de autenticação (Endpoints 1-4)
+npm run test:security     # Testes de códigos de segurança (Endpoints 5-6)
+npm run test:tickets      # Testes de tickets (Endpoints 7-15)
+npm run test:transactions # Testes de transações (Endpoints 16-23)
+npm run test:subcontas    # Testes de subcontas (Endpoints 24-28)
+```
+
+### 3. Executar um teste específico
+```
+# Formato padrão
+jest --config jest.node.config.js "<caminho_do_arquivo_de_teste>"
+
+# Exemplos:
+# Autenticação
+jest --config jest.node.config.js "__tests__/Auth-Endpoints-1-4/token.test.js"
+jest --config jest.node.config.js "__tests__/Auth-Endpoints-1-4/signup.test.js"
+
+# Códigos de Segurança
+jest --config jest.node.config.js "__tests__/Security-Codes-Endpoints-5-6/generate-code.test.js"
+jest --config jest.node.config.js "__tests__/Security-Codes-Endpoints-5-6/validate-code.test.js"
+
+# Tickets
+jest --config jest.node.config.js "__tests__/Tickets-Endpoints-7-15/create-ticket.test.js"
+jest --config jest.node.config.js "__tests__/Tickets-Endpoints-7-15/list-tickets.test.js"
+```
+
+### 4. Executar testes específicos de tickets (usando scripts predefinidos)
+```
+npm run test:ticket:create      # Teste de criação de ticket
+npm run test:ticket:list        # Teste de listagem de tickets
+npm run test:ticket:get         # Teste de obtenção de ticket
+npm run test:ticket:send-message # Teste de envio de mensagem
+npm run test:ticket:get-messages # Teste de obtenção de mensagens
+npm run test:ticket:unread      # Teste de verificação de mensagens não lidas
+npm run test:ticket:mark-read   # Teste de marcação de mensagens como lidas
+npm run test:ticket:update-status # Teste de atualização de status
+npm run test:ticket:metrics     # Teste de métricas
+```
+
+## Scripts Disponíveis no package.json
+
+### Testes por Categoria
+```json
+"test:all": "jest --config jest.node.config.js \"__tests__/\"",
+"test:auth": "jest --config jest.node.config.js \"__tests__/Auth-Endpoints-1-4\"",
+"test:security": "jest --config jest.node.config.js \"__tests__/Security-Codes-Endpoints-5-6\"",
+"test:tickets": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15\"",
+"test:transactions": "jest --config jest.node.config.js \"__tests__/Transacoes-Endpoints-16-23\"",
+"test:subcontas": "jest --config jest.node.config.js \"__tests__/Subcontas-Endpoints-24-28\""
+```
+
+### Testes Individuais de Tickets
+```json
+"test:ticket:create": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/create-ticket.test.js\"",
+"test:ticket:list": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/list-tickets.test.js\"",
+"test:ticket:get": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-ticket.test.js\"",
+"test:ticket:send-message": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/send-message.test.js\"",
+"test:ticket:get-messages": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-messages.test.js\"",
+"test:ticket:unread": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/check-unread-messages.test.js\"",
+"test:ticket:mark-read": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/mark-messages-as-read.test.js\"",
+"test:ticket:update-status": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/update-status.test.js\"",
+"test:ticket:metrics": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-metrics.test.js\""
+```
+
+## Arquivos de Teste Disponíveis
+
+### Auth (Endpoints 1-4)
+- `__tests__/Auth-Endpoints-1-4/token.test.js`
+- `__tests__/Auth-Endpoints-1-4/token-copy.test.js`
+- `__tests__/Auth-Endpoints-1-4/signup.test.js`
+- `__tests__/Auth-Endpoints-1-4/empty-url.test.js`
+
+### Security Codes (Endpoints 5-6)
+- `__tests__/Security-Codes-Endpoints-5-6/generate-code.test.js`
+- `__tests__/Security-Codes-Endpoints-5-6/validate-code.test.js`
+
+### Tickets (Endpoints 7-15)
+- `__tests__/Tickets-Endpoints-7-15/create-ticket.test.js`
+- `__tests__/Tickets-Endpoints-7-15/list-tickets.test.js`
+- `__tests__/Tickets-Endpoints-7-15/get-ticket.test.js`
+- `__tests__/Tickets-Endpoints-7-15/send-message.test.js`
+- `__tests__/Tickets-Endpoints-7-15/get-messages.test.js`
+- `__tests__/Tickets-Endpoints-7-15/check-unread-messages.test.js`
+- `__tests__/Tickets-Endpoints-7-15/mark-messages-as-read.test.js`
+- `__tests__/Tickets-Endpoints-7-15/update-status.test.js`
+- `__tests__/Tickets-Endpoints-7-15/get-metrics.test.js` 
