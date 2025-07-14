@@ -1,7 +1,7 @@
-import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
-import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
 
 import { AppCard } from '@/components/common/AppCard';
 import { AppListItem } from '@/components/common/AppListItem';
@@ -19,16 +19,19 @@ export default function SettingsMenuScreen() {
 
       <AppCard>
         <AppListItem
-          title="Gerenciar Usuários"
-          left={(props: any) => <AppListItem.Icon {...props} icon="account-group" />}
-          right={(props: any) => <AppListItem.Icon {...props} icon="chevron-right" />}
-          onPress={() => router.push('/users')}
+          title="Usuários"
+          description="Gerenciar usuários do sistema"
+          left={(props) => <AppListItem.Icon {...props} name="account-group" />}
+          right={(props) => <AppListItem.Icon {...props} name="chevron-right" />}
+          onPress={() => router.push('/users' as any)}
         />
+
         <AppListItem
-          title="Meu Perfil"
-          left={(props: any) => <AppListItem.Icon {...props} icon="account-circle" />}
-          right={(props: any) => <AppListItem.Icon {...props} icon="chevron-right" />}
-          onPress={() => router.push('/settings')}
+          title="Preferências"
+          description="Personalização e ajustes do app"
+          left={(props) => <AppListItem.Icon {...props} name="cog" />}
+          right={(props) => <AppListItem.Icon {...props} name="chevron-right" />}
+          onPress={() => router.push('/settings' as any)}
         />
         <AppListItem
           title="Sair"

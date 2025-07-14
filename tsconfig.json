@@ -1,5 +1,4 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
     "skipLibCheck": true,
@@ -8,31 +7,71 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react-native",
     "lib": [
-      "DOM",
       "ESNext"
     ],
+    "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": true,
     "target": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/src/*": ["./src/*"],
-      "@/app/*": ["./app/*"],
-      "@/components": ["./src/components"],
-      "@/components/*": ["./src/components/*"],
-      "@/contexts": ["./src/contexts"],
-      "@/contexts/*": ["./src/contexts/*"],
-      "@/services": ["./src/services"],
-      "@/services/*": ["./src/services/*"],
-      "@/hooks": ["./src/hooks"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/theme": ["./src/theme"],
-      "@/theme/*": ["./src/theme/*"],
-      "@/store": ["./src/store"],
-      "@/store/*": ["./src/store/*"],
-      "@/utils": ["./src/utils"],
-      "@/utils/*": ["./src/utils/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@/src/*": [
+        "./src/*"
+      ],
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/components": [
+        "./src/components"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/contexts": [
+        "./src/contexts"
+      ],
+      "@/contexts/*": [
+        "./src/contexts/*"
+      ],
+      "@/services": [
+        "./src/services"
+      ],
+      "@/services/*": [
+        "./src/services/*"
+      ],
+      "@/hooks": [
+        "./src/hooks"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/theme": [
+        "./src/theme"
+      ],
+      "@/theme/*": [
+        "./src/theme/*"
+      ],
+      "@/store": [
+        "./src/store"
+      ],
+      "@/store/*": [
+        "./src/store/*"
+      ],
+      "@/utils": [
+        "./src/utils"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ],
+      "@/types": [
+        "./src/types"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ]
     }
   },
   "include": [
@@ -40,5 +79,6 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

@@ -1,24 +1,28 @@
-import { View, ActivityIndicator } from 'react-native';
-import { Text, List } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { List, Text } from 'react-native-paper';
 
 import { AppCard } from '@/components/common/AppCard';
 import { AppListItem } from '@/components/common/AppListItem';
 import { AppTextInput } from '@/components/common/AppTextInput';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
-import { useCompanyStore, type Company } from '@/store/companyStore';
+import { useCompanyStore } from '@/store/companyStore';
+import { Company } from '@/types/company';
 
 export default function CompaniesScreen() {
   const router = useRouter();
-  const { companies, loading, fetchCompanies } = useCompanyStore();
+  const { companies, isLoading, fetchCompanies } = useCompanyStore();
 
   React.useEffect(() => {
     fetchCompanies();
   }, []);
 
   const handleGoToDetails = (companyId: string) => {
-    router.push(`/company-details?id=${companyId}`);
+    router.push({
+      pathname: '/company-details',
+      params: { id: companyId }
+    } as any);
   };
 
   return (
@@ -29,11 +33,11 @@ export default function CompaniesScreen() {
         </Text>
         <AppTextInput
           label="Buscar por nome ou CNPJ"
-          left={<AppTextInput.Icon icon="magnify" />}
+          left={(props) => <AppTextInput.Icon name="magnify" />}
         />
       </View>
 
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator size="large" style={{ marginTop: 20 }} />
       ) : (
         <AppCard>

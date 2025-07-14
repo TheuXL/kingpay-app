@@ -1,30 +1,47 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
-import { AppButton } from './AppButton';
+import {
+  ActivityIndicator,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  useColorScheme
+} from 'react-native';
+import { customTheme } from '../../theme/theme';
+import { AppTextInput } from './AppTextInput';
 
-interface FinancialPasswordModalProps {
+export interface FinancialPasswordModalProps {
   visible: boolean;
-  onClose: () => void;
-  onConfirm: (password: string) => Promise<void>;
   title?: string;
   message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: (password: string) => Promise<void>;
+  onClose: () => void;
+  isLoading?: boolean;
 }
 
 export const FinancialPasswordModal: React.FC<FinancialPasswordModalProps> = ({
   visible,
-  onClose,
-  onConfirm,
   title = 'Senha Financeira',
   message = 'Digite sua senha financeira para confirmar esta operação.',
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar',
+  onConfirm,
+  onClose,
+  isLoading = false,
 }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const handleConfirm = async () => {
     if (!password) {
-      setError('Por favor, digite sua senha financeira.');
+      setError('A senha financeira é obrigatória');
       return;
     }
 
@@ -33,10 +50,10 @@ export const FinancialPasswordModal: React.FC<FinancialPasswordModalProps> = ({
 
     try {
       await onConfirm(password);
-      handleClose();
+      setPassword('');
+      setLoading(false);
     } catch (err) {
-      setError('Senha financeira incorreta. Tente novamente.');
-    } finally {
+      setError('Senha financeira incorreta');
       setLoading(false);
     }
   };
@@ -47,6 +64,14 @@ export const FinancialPasswordModal: React.FC<FinancialPasswordModalProps> = ({
     onClose();
   };
 
+  const backgroundStyle = {
+    backgroundColor: isDark ? customTheme.colors.card.dark : customTheme.colors.card.light,
+  };
+  
+  const textColorStyle = {
+    color: isDark ? customTheme.colors.text.primary.dark : customTheme.colors.text.primary.light,
+  };
+
   return (
     <Modal
       visible={visible}
@@ -54,61 +79,67 @@ export const FinancialPasswordModal: React.FC<FinancialPasswordModalProps> = ({
       animationType="fade"
       onRequestClose={handleClose}
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={handleClose}
-      >
-        <View 
-          style={styles.container}
-          onStartShouldSetResponder={() => true}
-          onTouchEnd={(e) => e.stopPropagation()}
-        >
-          <Text variant="titleLarge" style={styles.title}>
-            {title}
-          </Text>
-          
-          <Text variant="bodyMedium" style={styles.message}>
-            {message}
-          </Text>
-          
-          <TextInput
-            label="Senha Financeira"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            style={styles.input}
-            error={!!error}
-          />
-          
-          {error && (
-            <Text variant="bodySmall" style={styles.errorText}>
-              {error}
-            </Text>
-          )}
-          
-          <View style={styles.buttonContainer}>
-            <AppButton 
-              mode="outlined" 
-              onPress={handleClose} 
-              style={styles.button}
-              disabled={loading}
-            >
-              Cancelar
-            </AppButton>
-            
-            <AppButton 
-              mode="contained" 
-              onPress={handleConfirm} 
-              style={styles.button}
-              loading={loading}
-              disabled={loading}
-            >
-              Confirmar
-            </AppButton>
-          </View>
+      <TouchableWithoutFeedback onPress={handleClose}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback>
+            <View style={[styles.modalContainer, backgroundStyle]}>
+              <Text style={[styles.title, textColorStyle]}>{title}</Text>
+              
+              <Text style={[styles.message, {
+                color: isDark 
+                  ? customTheme.colors.text.secondary.dark 
+                  : customTheme.colors.text.secondary.light
+              }]}>
+                {message}
+              </Text>
+              
+              <AppTextInput
+                label="Senha Financeira"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setError(null);
+                }}
+                secureTextEntry
+                error={error || undefined}
+                autoFocus
+              />
+              
+              <View style={styles.buttonsContainer}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleClose}
+                  disabled={loading || isLoading}
+                >
+                  <Text style={[styles.buttonText, { 
+                    color: isDark ? '#666' : '#999',
+                    opacity: (loading || isLoading) ? 0.5 : 1
+                  }]}>
+                    {cancelText}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleConfirm}
+                  disabled={loading || isLoading || !password}
+                >
+                  {loading || isLoading ? (
+                    <ActivityIndicator size="small" color={customTheme.colors.primary} />
+                  ) : (
+                    <Text style={[styles.buttonText, { 
+                      color: customTheme.colors.primary,
+                      opacity: (!password) ? 0.5 : 1
+                    }]}>
+                      {confirmText}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
@@ -120,35 +151,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 24,
+  modalContainer: {
     width: '90%',
-    maxWidth: 400,
+    borderRadius: customTheme.borderRadius.medium,
+    padding: customTheme.spacing.lg,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   title: {
-    marginBottom: 8,
-    textAlign: 'center',
+    fontSize: customTheme.fontSizes.lg,
+    fontWeight: '700', // Changed from theme.fontWeights.bold
+    marginBottom: customTheme.spacing.sm,
   },
   message: {
-    marginBottom: 16,
-    textAlign: 'center',
+    fontSize: customTheme.fontSizes.md,
+    marginBottom: customTheme.spacing.md,
   },
-  input: {
-    marginBottom: 8,
-  },
-  errorText: {
-    color: '#B00020',
-    marginBottom: 16,
-  },
-  buttonContainer: {
+  buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: customTheme.spacing.md,
   },
   button: {
-    flex: 1,
-    marginHorizontal: 4,
+    paddingVertical: customTheme.spacing.md,
+    paddingHorizontal: customTheme.spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: customTheme.fontSizes.md,
+    fontWeight: '600', // Changed from theme.fontWeights.semibold
   },
 }); 

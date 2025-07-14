@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { Text, SegmentedButtons } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import { AppCard } from '@/components/common/AppCard';
 import { AppListItem } from '@/components/common/AppListItem';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
-import { useFinancialStore, type Withdrawal, type Anticipation } from '@/store/financialStore';
+import { useFinancialStore, type Anticipation, type Withdrawal } from '@/store/financialStore';
 
 export default function FinancialScreen() {
   const [view, setView] = React.useState('withdrawals');
@@ -37,8 +37,11 @@ export default function FinancialScreen() {
             key={item.id}
             title={`R$ ${item.amount} - ${item.companies.name}`}
             description={`${item.status} - ${new Date(item.created_at).toLocaleDateString()}`}
-            right={() => <AppListItem.Icon icon="chevron-right" />}
-            onPress={() => router.push(`/withdrawal-details?id=${item.id}`)}
+            right={() => <AppListItem.Icon name="chevron-right" />}
+            onPress={() => router.push({
+              pathname: '/withdrawal-details',
+              params: { id: item.id }
+            } as any)}
           />
         ))}
       </AppCard>
@@ -54,8 +57,11 @@ export default function FinancialScreen() {
             key={item.id}
             title={`R$ ${item.amount} - ${item.companies.name}`}
             description={`${item.status} - ${new Date(item.created_at).toLocaleDateString()}`}
-            right={() => <AppListItem.Icon icon="chevron-right" />}
-            onPress={() => router.push(`/anticipation-details?id=${item.id}`)}
+            right={() => <AppListItem.Icon name="chevron-right" />}
+            onPress={() => router.push({
+              pathname: '/anticipation-details',
+              params: { id: item.id }
+            } as any)}
           />
         ))}
       </AppCard>
@@ -64,18 +70,36 @@ export default function FinancialScreen() {
 
   return (
     <ScreenLayout>
-      <Text variant="headlineMedium" style={styles.title}>
-        Financeiro
-      </Text>
+      <View style={styles.header}>
+        <Text variant="headlineMedium" style={styles.title}>
+          Financeiro
+        </Text>
+        
+        <Button 
+          mode="contained" 
+          icon="calculator"
+          // @ts-ignore - Ignorar erro de tipagem aqui
+          onPress={() => router.push('/tax-calculator')}
+          style={styles.calculatorButton}
+        >
+          Calculadora de Taxas
+        </Button>
+      </View>
 
       <SegmentedButtons
         value={view}
         onValueChange={setView}
         buttons={[
-          { value: 'withdrawals', label: 'Saques' },
-          { value: 'anticipations', label: 'Antecipações' },
+          {
+            value: 'withdrawals',
+            label: 'Saques',
+          },
+          {
+            value: 'anticipations',
+            label: 'Antecipações',
+          },
         ]}
-        style={styles.segments}
+        style={styles.segmentedButtons}
       />
 
       {view === 'withdrawals' ? renderWithdrawals() : renderAnticipations()}
@@ -87,10 +111,19 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 16,
   },
-  segments: {
+  segmentedButtons: {
     marginBottom: 16,
   },
   loader: {
     marginTop: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  calculatorButton: {
+    borderRadius: 8,
   },
 }); 

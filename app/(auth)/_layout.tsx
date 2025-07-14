@@ -1,16 +1,16 @@
-import { Stack, Redirect } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
+import { Redirect, Stack } from 'expo-router';
 
 export default function AuthLayout() {
-  const { session, loading } = useAuth();
-
-  if (loading) {
-    return null; // ou um componente de loading
-  }
-
-  if (session) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
+  // Add Stack Screen options
+  return (
+    <>
+      <Stack>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+      </Stack>
+      {/* Fix the Href type error by using a string without type annotation */}
+      <Redirect href="/(tabs)" />
+    </>
+  );
 } 

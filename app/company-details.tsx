@@ -1,12 +1,13 @@
-import { View, StyleSheet } from 'react-native';
-import { Text, Divider } from 'react-native-paper';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Divider, Text } from 'react-native-paper';
 
 import { AppButton } from '@/components/common/AppButton';
-import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { ConfirmationModal } from '@/components/common/ConfirmationModal';
-import { useCompanyStore, type Company } from '@/store/companyStore';
+import { ScreenLayout } from '@/components/layout/ScreenLayout';
+import { useCompanyStore } from '@/store/companyStore';
+import { Company } from '@/types/company';
 
 export default function CompanyDetailsScreen() {
   const router = useRouter();
@@ -57,14 +58,16 @@ export default function CompanyDetailsScreen() {
         {company.status === 'pending' && (
           <AppButton
             mode="contained"
-            onPress={() => router.push('/company-analysis')}>
+            onPress={() => router.push('/company-analysis' as any)}>
             Analisar Cadastro
           </AppButton>
         )}
         <AppButton onPress={() => setBlockModalVisible(true)}>
           Bloquear Empresa
         </AppButton>
-        <AppButton>Configurar Taxas</AppButton>
+        <AppButton onPress={() => console.log('Configurar taxas')}>
+          Configurar Taxas
+        </AppButton>
       </View>
 
       <ConfirmationModal

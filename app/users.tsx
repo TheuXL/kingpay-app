@@ -1,13 +1,13 @@
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
-import { Text, FAB } from 'react-native-paper';
 import { Stack, useRouter } from 'expo-router';
 import React from 'react';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import { FAB, Text } from 'react-native-paper';
 
 import { AppCard } from '@/components/common/AppCard';
 import { AppListItem } from '@/components/common/AppListItem';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { useUserStore } from '@/store/userStore';
-import { UserData } from '@/services/userService';
+import { User as UserData } from '@/types/users';
 
 export default function UsersListScreen() {
   const router = useRouter();
@@ -34,7 +34,10 @@ export default function UsersListScreen() {
               title={user.full_name || 'Usuário sem nome'}
               description={user.email}
               right={(props: any) => <AppListItem.Icon {...props} icon="chevron-right" />}
-              onPress={() => router.push(`/user-permissions?id=${user.id}`)}
+              onPress={() => router.push({
+                pathname: '/user-permissions',
+                params: { id: user.id }
+              } as any)}
             />
           ))}
         </AppCard>

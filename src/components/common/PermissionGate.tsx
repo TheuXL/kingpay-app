@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface PermissionGateProps {
   /**
@@ -25,7 +25,7 @@ interface PermissionGateProps {
 }
 
 /**
- * A component that conditionally renders its children based on user permissions
+ * A component that conditionally renders content based on user permissions
  */
 export const PermissionGate: React.FC<PermissionGateProps> = ({
   permissionIds,
@@ -33,18 +33,23 @@ export const PermissionGate: React.FC<PermissionGateProps> = ({
   children,
   fallback = null,
 }) => {
-  const { hasAllPermissions, hasAnyPermission, loading } = usePermissions();
-  
-  // While loading permissions, don't render anything
-  if (loading) {
-    return null;
+  const { hasPermission, hasAllPermissions, hasAnyPermission } = usePermissions();
+
+  // Handle the case where no permissions are required
+  if (!permissionIds || permissionIds.length === 0) {
+    return <>{children}</>;
   }
-  
-  // Check if the user has the required permissions
-  const hasAccess = requireAll
+
+  // Handle the case with a single permission
+  if (permissionIds.length === 1) {
+    const hasAccess = hasPermission(permissionIds[0]);
+    return <>{hasAccess ? children : fallback}</>;
+  }
+
+  // Handle the case with multiple permissions
+  const hasAccess = requireAll 
     ? hasAllPermissions(permissionIds)
     : hasAnyPermission(permissionIds);
-  
-  // Render the children if the user has access, otherwise render the fallback
-  return hasAccess ? <>{children}</> : <>{fallback}</>;
+
+  return <>{hasAccess ? children : fallback}</>;
 }; 

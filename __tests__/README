@@ -24,35 +24,228 @@ npm run test:all
 ```
 
 ### 2. Executar testes por categoria
-```
-npm run test:auth         # Testes de autenticação (Endpoints 1-4)
-npm run test:security     # Testes de códigos de segurança (Endpoints 5-6)
-npm run test:tickets      # Testes de tickets (Endpoints 7-15)
-npm run test:transactions # Testes de transações (Endpoints 16-23)
-npm run test:subcontas    # Testes de subcontas (Endpoints 24-28)
+
+```bash
+# Autenticação (Endpoints 1-4)
+npm test -- -t "Auth-Endpoints"
+npm test -- -t "Auth"
+
+# Códigos de Segurança (Endpoints 5-6)
+npm test -- -t "Security-Codes"
+npm test -- -t "Security"
+
+# Tickets (Endpoints 7-15)
+npm test -- -t "Tickets-Endpoints"
+npm test -- -t "Tickets"
+
+# Transações (Endpoints 16-23)
+npm test -- -t "Transacoes-Endpoints"
+npm test -- -t "Transacoes"
+
+# Subcontas (Endpoints 24-28)
+npm test -- -t "Subcontas-Endpoints"
+npm test -- -t "Subcontas"
+
+# Taxas (Endpoint 35)
+npm test -- -t "Taxas-Endpoint"
+npm test -- -t "Taxas"
+
+# Chaves Pix (Endpoints 36-37)
+npm test -- -t "Chaves-Pix-Endpoints"
+npm test -- -t "Chaves-Pix"
+
+# Subconta (Endpoints 38-43)
+npm test -- -t "Subconta Endpoints"
+npm test -- -t "Subconta"
+
+# Configurações (Endpoints 44-50)
+npm test -- -t "Configurações Endpoints"
+npm test -- -t "Configuracoes"
+
+# UtmFy (Endpoints 51-53)
+npm test -- -t "UtmFy Endpoints"
+npm test -- -t "UtmFy"
+
+# Análise de Risco (Endpoint 54)
+npm test -- -t "Analise-Risco"
+npm test -- -t "Analise"
+
+# Clientes (Endpoints 55-59)
+npm test -- -t "Clientes Endpoints"
+npm test -- -t "Clientes"
+
+# Padrões (Endpoints 65-66)
+npm test -- -t "Padroes-Endpoints"
+npm test -- -t "Padroes"
+
+# Admin Config (Endpoints 75-77)
+npm test -- -t "Admin-Config-Endpoints"
+npm test -- -t "Admin-Config"
+
+# Dashboard (Endpoints 78-83)
+npm test -- -t "Dashboard-Endpoints"
+npm test -- -t "Dashboard"
+
+# Saques (Endpoints 84-89)
+npm test -- -t "Saques Endpoints"
+npm test -- -t "Saques"
+
+# Antecipações (Endpoints 90-92)
+npm test -- -t "Antecipações Endpoints"
+npm test -- -t "Antecipacoes"
+
+# User (Endpoints 93-98)
+npm test -- -t "User Endpoints"
+npm test -- -t "User"
+
+# Transações (Endpoints 99-101)
+npm test -- -t "Transações Endpoints"
+npm test -- -t "Transacoes-99-101"
+
+# Carteira (Endpoints 102-108)
+npm test -- -t "Carteira Endpoints"
+npm test -- -t "Carteira"
+
+# Webhooks (Endpoints 109-112)
+npm test -- -t "Webhooks Endpoints"
+npm test -- -t "Webhooks"
+
+# Billings (Endpoints 113-114)
+npm test -- -t "Billings Endpoints"
+npm test -- -t "Billings"
+
+# BaaS (Endpoints 115-119)
+npm test -- -t "BaaS Endpoints"
+npm test -- -t "BaaS"
+
+# Acquirers (Endpoints 120-124)
+npm test -- -t "Acquirers Endpoints"
+npm test -- -t "Acquirers"
+
+# Company (Endpoints 125-144)
+npm test -- -t "Company Endpoints"
+npm test -- -t "Company"
 ```
 
-### 3. Executar um teste específico
-```
+### 3. Executar testes específicos
+
+```bash
 # Formato padrão
-jest --config jest.node.config.js "<caminho_do_arquivo_de_teste>"
+npm test -- "<caminho_do_arquivo_de_teste>"
 
-# Exemplos:
-# Autenticação
-jest --config jest.node.config.js "__tests__/Auth-Endpoints-1-4/token.test.js"
-jest --config jest.node.config.js "__tests__/Auth-Endpoints-1-4/signup.test.js"
+# Exemplos por categoria:
 
-# Códigos de Segurança
-jest --config jest.node.config.js "__tests__/Security-Codes-Endpoints-5-6/generate-code.test.js"
-jest --config jest.node.config.js "__tests__/Security-Codes-Endpoints-5-6/validate-code.test.js"
+# Autenticação (Endpoints 1-4)
+npm test -- "__tests__/Auth-Endpoints-1-4/token.test.js"
+npm test -- "__tests__/Auth-Endpoints-1-4/signup.test.js"
+npm test -- "__tests__/Auth-Endpoints-1-4/empty-url.test.js"
+npm test -- "__tests__/Auth-Endpoints-1-4/token-copy.test.js"
 
+# Códigos de Segurança (Endpoints 5-6)
+npm test -- "__tests__/Security-Codes-Endpoints-5-6/generate-code.test.js"
+npm test -- "__tests__/Security-Codes-Endpoints-5-6/validate-code.test.js"
+
+# Tickets (Endpoints 7-15)
+npm test -- "__tests__/Tickets-Endpoints-7-15/create-ticket.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/list-tickets.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/get-ticket.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/send-message.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/get-messages.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/check-unread-messages.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/mark-messages-as-read.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/update-status.test.js"
+npm test -- "__tests__/Tickets-Endpoints-7-15/get-metrics.test.js"
+
+# Transações (Endpoints 16-23)
+npm test -- "__tests__/Transacoes-Endpoints-16-23/generate-pix-dev.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/generate-pix-prod.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/get-credentials.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/process-card-dev.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/process-card-hash-dev.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/process-card-prod.test.js"
+npm test -- "__tests__/Transacoes-Endpoints-16-23/process-webhook.test.js"
+
+# Subcontas (Endpoints 24-28)
+npm test -- "__tests__/Subcontas-Endpoints-24-28/create-subaccount.test.js"
+npm test -- "__tests__/Subcontas-Endpoints-24-28/create-subaccount-with-kyc.test.js"
+npm test -- "__tests__/Subcontas-Endpoints-24-28/request-verification.test.js"
+npm test -- "__tests__/Subcontas-Endpoints-24-28/webhooks.test.js"
+
+# Taxas (Endpoint 35)
+npm test -- "__tests__/Taxas-Endpoint-35/calculate-taxes.test.js"
+
+# Chaves Pix (Endpoints 36-37)
+npm test -- "__tests__/Chaves-Pix-Endpoints-36-37/list-pix-keys.test.js"
+npm test -- "__tests__/Chaves-Pix-Endpoints-36-37/approve-pix-key.test.js"
+
+# Subconta (Endpoints 38-43)
+npm test -- "__tests__/Subconta Endpoints 38-43/check-status.test.js"
+npm test -- "__tests__/Subconta Endpoints 38-43/check-kyc.test.js"
+npm test -- "__tests__/Subconta Endpoints 38-43/create-subaccount.test.js"
+npm test -- "__tests__/Subconta Endpoints 38-43/list-subaccounts.test.js"
+npm test -- "__tests__/Subconta Endpoints 38-43/resend-documents.test.js"
+
+# Configurações (Endpoints 44-50)
+npm test -- "__tests__/Configurações Endpoints 44-50/config-endpoints.test.js"
+npm test -- "__tests__/Configurações Endpoints 44-50/company-config-endpoints.test.js"
+npm test -- "__tests__/Configurações Endpoints 44-50/personalization-endpoints.test.js"
+npm test -- "__tests__/Configurações Endpoints 44-50/terms-endpoints.test.js"
+
+# UtmFy (Endpoints 51-53)
+npm test -- "__tests__/UtmFy Endpoints 51-53/utmfy-endpoints.test.js"
+
+# Análise de Risco (Endpoint 54)
+npm test -- "__tests__/Analise-Risco-Endpoint-54/analise-risco.test.js"
+
+# Clientes (Endpoints 55-59)
+npm test -- "__tests__/Clientes Endpoints 55-59/clientes-endpoints.test.js"
+
+# Padrões (Endpoints 65-66)
+npm test -- "__tests__/Padroes-Endpoints-65-66/list-padroes.test.js"
+npm test -- "__tests__/Padroes-Endpoints-65-66/update-padrao.test.js"
+
+# Admin Config (Endpoints 75-77)
+npm test -- "__tests__/Admin-Config-Endpoints-75-77/get-config.test.js"
+npm test -- "__tests__/Admin-Config-Endpoints-75-77/update-config.test.js"
+
+# Dashboard (Endpoints 78-83)
+npm test -- "__tests__/Dashboard-Endpoints-78-83/get-dashboard.test.js"
+
+# Saques (Endpoints 84-89)
+npm test -- "__tests__/Saques Endpoints 84-89/saques-endpoints.test.js"
+
+# Antecipações (Endpoints 90-92)
+npm test -- "__tests__/Antecipações Endpoints 90-92/antecipacoes-endpoints.test.js"
+
+# User (Endpoints 93-98)
+npm test -- "__tests__/User Endpoints 93-98/user-endpoints.test.js"
+
+# Transações (Endpoints 99-101)
+npm test -- "__tests__/Transações Endpoints 99-101/transacoes-endpoints.test.js"
+
+# Carteira (Endpoints 102-108)
+npm test -- "__tests__/Carteira Endpoints 102-108/carteira-endpoints.test.js"
+
+# Webhooks (Endpoints 109-112)
+npm test -- "__tests__/Webhooks Endpoints 109-112/webhooks-endpoints.test.js"
+
+# Billings (Endpoints 113-114)
+npm test -- "__tests__/Billings Endpoints 113-114/billings-endpoints.test.js"
+
+# BaaS (Endpoints 115-119)
+npm test -- "__tests__/BaaS Endpoints 115-119/baas-endpoints.test.js"
+
+# Acquirers (Endpoints 120-124)
+npm test -- "__tests__/Acquirers Endpoints 120-124/acquirers-endpoints.test.js"
+
+# Company (Endpoints 125-144)
+npm test -- "__tests__/Company Endpoints 125-144/company-endpoints.test.js"
+```
+
+### 4. Executar testes específicos por função (usando scripts predefinidos)
+
+```bash
 # Tickets
-jest --config jest.node.config.js "__tests__/Tickets-Endpoints-7-15/create-ticket.test.js"
-jest --config jest.node.config.js "__tests__/Tickets-Endpoints-7-15/list-tickets.test.js"
-```
-
-### 4. Executar testes específicos de tickets (usando scripts predefinidos)
-```
 npm run test:ticket:create      # Teste de criação de ticket
 npm run test:ticket:list        # Teste de listagem de tickets
 npm run test:ticket:get         # Teste de obtenção de ticket
@@ -62,52 +255,117 @@ npm run test:ticket:unread      # Teste de verificação de mensagens não lidas
 npm run test:ticket:mark-read   # Teste de marcação de mensagens como lidas
 npm run test:ticket:update-status # Teste de atualização de status
 npm run test:ticket:metrics     # Teste de métricas
+
+# Autenticação
+npm run test:auth:token         # Teste de token
+npm run test:auth:signup        # Teste de cadastro
+npm run test:auth:empty-url     # Teste de URL vazia
+
+# Códigos de Segurança
+npm run test:security:generate  # Teste de geração de código
+npm run test:security:validate  # Teste de validação de código
+
+# Transações
+npm run test:transaction:pix-dev # Teste de geração de PIX em dev
+npm run test:transaction:pix-prod # Teste de geração de PIX em prod
+npm run test:transaction:card-dev # Teste de processamento de cartão em dev
+npm run test:transaction:card-prod # Teste de processamento de cartão em prod
+npm run test:transaction:webhook # Teste de processamento de webhook
+
+# UtmFy
+npm run test:utmfy              # Testes de endpoints UtmFy
+
+# Saques
+npm run test:saques             # Testes de endpoints de Saques
+
+# Antecipações
+npm run test:antecipacoes       # Testes de endpoints de Antecipações  
+
+# User
+npm run test:user               # Testes de endpoints de User
+
+# Carteira
+npm run test:carteira           # Testes de endpoints de Carteira
+
+# Webhooks
+npm run test:webhooks           # Testes de endpoints de Webhooks
+
+# Billings
+npm run test:billings           # Testes de endpoints de Billings
+
+# BaaS
+npm run test:baas               # Testes de endpoints de BaaS
+
+# Acquirers
+npm run test:acquirers          # Testes de endpoints de Acquirers
+
+# Company
+npm run test:company            # Testes de endpoints de Company
 ```
 
-## Scripts Disponíveis no package.json
+## Resumo de Todas as Categorias de Testes
 
-### Testes por Categoria
-```json
-"test:all": "jest --config jest.node.config.js \"__tests__/\"",
-"test:auth": "jest --config jest.node.config.js \"__tests__/Auth-Endpoints-1-4\"",
-"test:security": "jest --config jest.node.config.js \"__tests__/Security-Codes-Endpoints-5-6\"",
-"test:tickets": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15\"",
-"test:transactions": "jest --config jest.node.config.js \"__tests__/Transacoes-Endpoints-16-23\"",
-"test:subcontas": "jest --config jest.node.config.js \"__tests__/Subcontas-Endpoints-24-28\""
-```
+| Categoria | Endpoints | Descrição | Comando |
+|-----------|-----------|-----------|---------|
+| Autenticação | 1-4 | Testes de login, registro e token | `npm test -- -t "Auth"` |
+| Códigos de Segurança | 5-6 | Testes de geração e validação de códigos | `npm test -- -t "Security"` |
+| Tickets | 7-15 | Testes de tickets e mensagens | `npm test -- -t "Tickets"` |
+| Transações | 16-23 | Testes de pagamentos PIX e cartão | `npm test -- -t "Transacoes"` |
+| Subcontas | 24-28 | Testes de criação de subcontas | `npm test -- -t "Subcontas"` |
+| Taxas | 35 | Testes de cálculo de taxas | `npm test -- -t "Taxas"` |
+| Chaves PIX | 36-37 | Testes de chaves PIX | `npm test -- -t "Chaves-Pix"` |
+| Subconta | 38-43 | Testes de gerenciamento de subcontas | `npm test -- -t "Subconta"` |
+| Configurações | 44-50 | Testes de configurações do sistema | `npm test -- -t "Configuracoes"` |
+| UtmFy | 51-53 | Testes de rastreadores UTM | `npm test -- -t "UtmFy"` |
+| Análise de Risco | 54 | Testes de análise de risco | `npm test -- -t "Analise"` |
+| Clientes | 55-59 | Testes de gerenciamento de clientes | `npm test -- -t "Clientes"` |
+| Padrões | 65-66 | Testes de padrões do sistema | `npm test -- -t "Padroes"` |
+| Admin Config | 75-77 | Testes de configurações de admin | `npm test -- -t "Admin-Config"` |
+| Dashboard | 78-83 | Testes de dashboard | `npm test -- -t "Dashboard"` |
+| Saques | 84-89 | Testes de saques | `npm test -- -t "Saques"` |
+| Antecipações | 90-92 | Testes de antecipações | `npm test -- -t "Antecipacoes"` |
+| User | 93-98 | Testes de gerenciamento de usuários | `npm test -- -t "User"` |
+| Transações | 99-101 | Testes de transações | `npm test -- -t "Transacoes-99-101"` |
+| Carteira | 102-108 | Testes de carteira | `npm test -- -t "Carteira"` |
+| Webhooks | 109-112 | Testes de webhooks | `npm test -- -t "Webhooks"` |
+| Billings | 113-114 | Testes de cobrança | `npm test -- -t "Billings"` |
+| BaaS | 115-119 | Testes de BaaS | `npm test -- -t "BaaS"` |
+| Acquirers | 120-124 | Testes de adquirentes | `npm test -- -t "Acquirers"` |
+| Company | 125-144 | Testes de empresa | `npm test -- -t "Company"` |
 
-### Testes Individuais de Tickets
-```json
-"test:ticket:create": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/create-ticket.test.js\"",
-"test:ticket:list": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/list-tickets.test.js\"",
-"test:ticket:get": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-ticket.test.js\"",
-"test:ticket:send-message": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/send-message.test.js\"",
-"test:ticket:get-messages": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-messages.test.js\"",
-"test:ticket:unread": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/check-unread-messages.test.js\"",
-"test:ticket:mark-read": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/mark-messages-as-read.test.js\"",
-"test:ticket:update-status": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/update-status.test.js\"",
-"test:ticket:metrics": "jest --config jest.node.config.js \"__tests__/Tickets-Endpoints-7-15/get-metrics.test.js\""
-```
+## Dicas para Execução de Testes
 
-## Arquivos de Teste Disponíveis
+1. **Testes Isolados**: Para executar um teste específico dentro de um arquivo, use o parâmetro `-t` seguido do nome do teste:
+   ```bash
+   npm test -- -t "nome do teste específico"
+   ```
 
-### Auth (Endpoints 1-4)
-- `__tests__/Auth-Endpoints-1-4/token.test.js`
-- `__tests__/Auth-Endpoints-1-4/token-copy.test.js`
-- `__tests__/Auth-Endpoints-1-4/signup.test.js`
-- `__tests__/Auth-Endpoints-1-4/empty-url.test.js`
+2. **Modo Watch**: Para executar testes em modo watch (reexecuta quando arquivos são alterados):
+   ```bash
+   npm test -- --watch
+   ```
 
-### Security Codes (Endpoints 5-6)
-- `__tests__/Security-Codes-Endpoints-5-6/generate-code.test.js`
-- `__tests__/Security-Codes-Endpoints-5-6/validate-code.test.js`
+3. **Verbose**: Para ver detalhes completos dos testes:
+   ```bash
+   npm test -- --verbose
+   ```
 
-### Tickets (Endpoints 7-15)
-- `__tests__/Tickets-Endpoints-7-15/create-ticket.test.js`
-- `__tests__/Tickets-Endpoints-7-15/list-tickets.test.js`
-- `__tests__/Tickets-Endpoints-7-15/get-ticket.test.js`
-- `__tests__/Tickets-Endpoints-7-15/send-message.test.js`
-- `__tests__/Tickets-Endpoints-7-15/get-messages.test.js`
-- `__tests__/Tickets-Endpoints-7-15/check-unread-messages.test.js`
-- `__tests__/Tickets-Endpoints-7-15/mark-messages-as-read.test.js`
-- `__tests__/Tickets-Endpoints-7-15/update-status.test.js`
-- `__tests__/Tickets-Endpoints-7-15/get-metrics.test.js` 
+4. **Combinando Parâmetros**: Você pode combinar diferentes parâmetros:
+   ```bash
+   npm test -- -t "Auth" --verbose
+   ```
+
+5. **Ignorar Testes**: Para ignorar determinados testes:
+   ```bash
+   npm test -- --testPathIgnorePatterns="Auth"
+   ```
+
+6. **Executar Testes em Paralelo**: Para melhorar a performance:
+   ```bash
+   npm test -- --maxWorkers=4
+   ```
+
+7. **Timeout Personalizado**: Para testes que demoram mais:
+   ```bash
+   npm test -- --testTimeout=30000
+   ``` 

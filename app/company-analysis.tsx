@@ -1,11 +1,11 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Divider } from 'react-native-paper';
 import { Stack } from 'expo-router';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
 
 import { AppButton } from '@/components/common/AppButton';
 import { AppCard } from '@/components/common/AppCard';
-import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { AppListItem } from '@/components/common/AppListItem';
+import { ScreenLayout } from '@/components/layout/ScreenLayout';
 
 export default function CompanyAnalysisScreen() {
   return (
@@ -21,23 +21,23 @@ export default function CompanyAnalysisScreen() {
         </Text>
 
         <AppCard>
-          <AppCard.Title title="Documentos Enviados" />
+          <AppCard.Title>Documentos Enviados</AppCard.Title>
           <AppCard.Content>
             <AppListItem
               title="Contrato Social"
-              left={() => <AppListItem.Icon icon="file-document" />}
-              right={() => <AppListItem.Icon icon="download" />}
+              left={() => <AppListItem.Icon name="file-document" />}
+              right={() => <AppListItem.Icon name="download" />}
             />
             <AppListItem
               title="Documento do Sócio"
-              left={() => <AppListItem.Icon icon="file-account" />}
-              right={() => <AppListItem.Icon icon="download" />}
+              left={() => <AppListItem.Icon name="file-account" />}
+              right={() => <AppListItem.Icon name="download" />}
             />
           </AppCard.Content>
         </AppCard>
 
         <AppCard>
-          <AppCard.Title title="Consulta CNPJ" />
+          <AppCard.Title>Consulta CNPJ</AppCard.Title>
           <AppCard.Content>
             <Text>Status: ATIVA</Text>
             <Text>Capital Social: R$ 100.000,00</Text>
@@ -45,10 +45,18 @@ export default function CompanyAnalysisScreen() {
         </AppCard>
 
         <View style={styles.actionsContainer}>
-          <AppButton mode="contained" icon="check">
+          <AppButton 
+            mode="contained" 
+            icon="check"
+            onPress={() => console.log('Aprovar')}
+          >
             Aprovar Cadastro
           </AppButton>
-          <AppButton mode="outlined" icon="close">
+          <AppButton 
+            mode="outlined" 
+            icon="close"
+            onPress={() => console.log('Reprovar')}
+          >
             Reprovar Cadastro
           </AppButton>
         </View>

@@ -260,8 +260,71 @@ export const transactionService = {
       }
 
       return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: `An unexpected error occurred: ${error.message}` };
+    }
+  },
+
+  /**
+   * Get transaction summary
+   * Endpoint: POST https://{{base_url}}/functions/v1/get-transactions-summary
+   */
+  getTransactionsSummary: async (): Promise<TransactionResponse> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-transactions-summary', {
+        method: 'POST',
+        body: {},
+      });
+
+      if (error) {
+        return { success: false, data: null, error: error.message };
+      }
+
+      return { success: true, data, error: null };
     } catch (error) {
-      return { success: false, error };
+      return { success: false, data: null, error: `An unexpected error occurred: ${error}` };
+    }
+  },
+
+  /**
+   * Get all transactions with optional filters
+   * Endpoint: POST https://{{base_url}}/functions/v1/get-all-transactions
+   */
+  getAllTransactions: async (filters = {}): Promise<TransactionResponse> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-all-transactions', {
+        method: 'POST',
+        body: { filters },
+      });
+
+      if (error) {
+        return { success: false, data: null, error: error.message };
+      }
+
+      return { success: true, data, error: null };
+    } catch (error) {
+      return { success: false, data: null, error: `An unexpected error occurred: ${error}` };
+    }
+  },
+
+  /**
+   * Get details for a single transaction
+   * Endpoint: POST https://{{base_url}}/functions/v1/get-transaction-details
+   */
+  getTransactionDetails: async (id: string): Promise<TransactionResponse> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-transaction-details', {
+        method: 'POST',
+        body: { id },
+      });
+
+      if (error) {
+        return { success: false, data: null, error: error.message };
+      }
+
+      return { success: true, data, error: null };
+    } catch (error) {
+      return { success: false, data: null, error: `An unexpected error occurred: ${error}` };
     }
   }
 }; 

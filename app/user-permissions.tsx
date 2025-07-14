@@ -1,12 +1,12 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Checkbox } from 'react-native-paper';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Checkbox, Text } from 'react-native-paper';
 
 import { AppButton } from '@/components/common/AppButton';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { useUserStore } from '@/store/userStore';
-import { UserData } from '@/services/userService';
+import { User as UserData } from '@/types/users';
 
 const allPermissions = [
   'Aprovar/Reprovar Saques',
@@ -66,7 +66,11 @@ export default function UserPermissionsScreen() {
           />
         ))}
 
-        <AppButton mode="contained" style={styles.saveButton}>
+        <AppButton 
+          mode="contained" 
+          style={styles.saveButton} 
+          onPress={() => console.log('Saving permissions:', permissions)}
+        >
           Salvar Alterações
         </AppButton>
       </ScrollView>

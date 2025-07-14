@@ -35,8 +35,10 @@ const MENU_SECTIONS: Record<string, MenuItem[]> = {
   PRINCIPAL: [
     { name: 'index', title: 'Dashboard', icon: 'view-dashboard-outline' },
     { name: 'wallet', title: 'Carteira', icon: 'wallet-outline' },
+    { name: 'billings', title: 'Faturas', icon: 'file-document-outline' },
     { name: 'transactions', title: 'Transações', icon: 'swap-horizontal' },
     { name: 'payment-link', title: 'Link de Pagamento', icon: 'link-variant' },
+    { name: 'tax-calculator', title: 'Calculadora de Taxas', icon: 'calculator' },
   ],
   GESTAO: [
     { name: 'clients', title: 'Clientes', icon: 'account-group-outline' },
@@ -52,6 +54,7 @@ const MENU_SECTIONS: Record<string, MenuItem[]> = {
   ADMINISTRADOR: [
     { name: 'admin-dashboard', title: 'Dashboard Admin', icon: 'view-dashboard' },
     { name: 'companies', title: 'Empresas', icon: 'domain' },
+    { name: 'users', title: 'Usuários', icon: 'account-multiple-outline' },
     { name: 'all-transactions', title: 'Todas Transações', icon: 'swap-horizontal' },
     { name: 'withdrawals', title: 'Saques', icon: 'cash-multiple' },
     { name: 'anticipations', title: 'Antecipações', icon: 'fast-forward' },
@@ -59,6 +62,8 @@ const MENU_SECTIONS: Record<string, MenuItem[]> = {
     { name: 'acquirers', title: 'Adquirentes', icon: 'credit-card-outline' },
     { name: 'baas', title: 'BaaS', icon: 'bank-outline' },
     { name: 'pix-keys', title: 'Chaves PIX', icon: 'key-chain-variant' },
+    { name: 'pix-key-admin', title: 'Gerenciar Chaves PIX', icon: 'key-variant' },
+    { name: 'subaccount-admin', title: 'Gerenciar Subcontas', icon: 'account-cash-outline' },
     { name: 'alerts', title: 'Alertas', icon: 'bell-outline' },
     { name: 'admin-settings', title: 'Configurações', icon: 'cog-outline' },
   ],
@@ -154,6 +159,7 @@ export default function DrawerLayout() {
     return null; // ou um componente de loading
   }
 
+  // Fix the Href type error by using the Redirect component with a string
   if (!session) {
     return <Redirect href="/(auth)/login" />;
   }
@@ -190,6 +196,15 @@ export default function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="billings"
+        options={{
+          title: 'Faturas',
+          drawerIcon: ({ color, size }: DrawerIconProps) => (
+            <MaterialCommunityIcons name="file-document-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="transactions"
         options={{
           title: 'Transações',
@@ -204,6 +219,15 @@ export default function DrawerLayout() {
           title: 'Link de Pagamento',
           drawerIcon: ({ color, size }: DrawerIconProps) => (
             <MaterialCommunityIcons name="link-variant" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="tax-calculator"
+        options={{
+          title: 'Calculadora de Taxas',
+          drawerIcon: ({ color, size }: DrawerIconProps) => (
+            <MaterialCommunityIcons name="calculator" color={color} size={size} />
           ),
         }}
       />
@@ -279,6 +303,15 @@ export default function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="users"
+        options={{
+          title: 'Usuários',
+          drawerIcon: ({ color, size }: DrawerIconProps) => (
+            <MaterialCommunityIcons name="account-multiple-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="all-transactions"
         options={{
           title: 'Todas Transações',
@@ -338,6 +371,24 @@ export default function DrawerLayout() {
           title: 'Chaves PIX',
           drawerIcon: ({ color, size }: DrawerIconProps) => (
             <MaterialCommunityIcons name="key-chain-variant" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="pix-key-admin"
+        options={{
+          title: 'Gerenciar Chaves PIX',
+          drawerIcon: ({ color, size }: DrawerIconProps) => (
+            <MaterialCommunityIcons name="key-variant" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="subaccount-admin"
+        options={{
+          title: 'Gerenciar Subcontas',
+          drawerIcon: ({ color, size }: DrawerIconProps) => (
+            <MaterialCommunityIcons name="account-cash-outline" color={color} size={size} />
           ),
         }}
       />

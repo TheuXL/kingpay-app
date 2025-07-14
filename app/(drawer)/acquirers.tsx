@@ -1,28 +1,34 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
+import { router } from 'expo-router';
+import React, { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
 
-export default function AcquirersScreen() {
+export default function AcquirersRedirect() {
+  useEffect(() => {
+    // Redirect to the new acquirers index screen
+    router.replace({
+      pathname: '/(drawer)/acquirers' as any
+    });
+  }, []);
+
   return (
     <ScreenLayout>
-      <Text variant="headlineMedium" style={styles.title}>
-        Adquirentes
-      </Text>
       <View style={styles.container}>
-        <Text>Conteúdo de Adquirentes</Text>
+        <ActivityIndicator size="large" />
+        <Text style={styles.text}>Redirecionando...</Text>
       </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    marginBottom: 16,
-  },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  text: {
+    marginTop: 16,
   },
 }); 

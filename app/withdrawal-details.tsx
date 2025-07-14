@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Text, Card, Divider, Badge } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, StyleSheet, View, ViewStyle } from 'react-native';
+import { Badge, Card, Divider, Text } from 'react-native-paper';
 
-import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { AppButton } from '@/components/common/AppButton';
 import { FinancialPasswordModal } from '@/components/common/FinancialPasswordModal';
+import { ScreenLayout } from '@/components/layout/ScreenLayout';
 
 export default function WithdrawalDetailsScreen() {
   const params = useLocalSearchParams();
@@ -150,7 +150,7 @@ export default function WithdrawalDetailsScreen() {
             <AppButton 
               mode="contained" 
               onPress={handleApprove}
-              style={[styles.button, styles.approveButton]}
+              style={{...styles.button, ...styles.approveButton}}
               loading={loading}
               disabled={loading}
             >
@@ -224,8 +224,8 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginHorizontal: 4,
-  },
+  } as ViewStyle,
   approveButton: {
     backgroundColor: '#4CAF50',
-  },
+  } as ViewStyle,
 }); 

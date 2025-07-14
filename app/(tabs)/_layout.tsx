@@ -12,6 +12,7 @@ export default function TabLayout() {
     return null; // ou um componente de loading
   }
 
+  // Fix the Href type error by using a string without type annotation
   if (!session) {
     return <Redirect href="/(auth)/login" />;
   }
@@ -42,6 +43,24 @@ export default function TabLayout() {
           title: 'Empresas',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="domain" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="clientes"
+        options={{
+          title: 'Clientes',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="link-pagamentos"
+        options={{
+          title: 'Links',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="link-variant" color={color} size={size} />
           ),
         }}
       />
@@ -83,6 +102,13 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="ticket-metrics"
+        options={{
+          href: null, // Não é acessível diretamente pela URL
+          tabBarButton: () => null, // Não mostra na barra de abas
+        }}
+      />
+      <Tabs.Screen
+        name="cliente-details"
         options={{
           href: null, // Não é acessível diretamente pela URL
           tabBarButton: () => null, // Não mostra na barra de abas

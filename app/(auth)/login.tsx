@@ -1,8 +1,8 @@
 // app/(auth)/login.tsx
-import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
 
 import { AppButton } from '@/components/common/AppButton';
 import { AppTextInput } from '@/components/common/AppTextInput';
@@ -69,10 +69,10 @@ export default function LoginScreen() {
         <AppButton mode="contained" onPress={handleLogin} loading={loading} disabled={loading}>
           Entrar
         </AppButton>
-        <AppButton onPress={() => router.push('/(auth)/register')} disabled={loading}>
+        <AppButton onPress={() => router.push('/(auth)/register' as any)} disabled={loading}>
           Criar Conta
         </AppButton>
-        <AppButton onPress={() => router.push('/(auth)/forgot-password')} disabled={loading}>
+        <AppButton onPress={() => router.push('/(auth)/forgot-password' as any)} disabled={loading}>
           Esqueci minha senha
         </AppButton>
       </View>

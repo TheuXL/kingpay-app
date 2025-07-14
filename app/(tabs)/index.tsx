@@ -1,13 +1,25 @@
-import { Text } from 'react-native-paper';
 import React from 'react';
+import { Text } from 'react-native-paper';
 
 import { AppCard } from '@/components/common/AppCard';
 import { ScreenLayout } from '@/components/layout/ScreenLayout';
 import { useCompanyStore } from '@/store/companyStore';
 import { StyleSheet } from 'react-native';
 
+// Add missing interface for stats
+interface CompanyStats {
+  pendingCount: number;
+}
+
+// Extend the store with missing properties
+interface DashboardStore {
+  stats: CompanyStats;
+  isLoading: boolean;
+  fetchCompanyStats: () => Promise<void>;
+}
+
 export default function DashboardScreen() {
-  const { stats, loading, fetchCompanyStats } = useCompanyStore();
+  const { stats, isLoading, fetchCompanyStats } = useCompanyStore() as unknown as DashboardStore;
 
   React.useEffect(() => {
     fetchCompanyStats();
@@ -17,9 +29,9 @@ export default function DashboardScreen() {
     <ScreenLayout>
       <Text variant="headlineMedium" style={styles.title}>Dashboard</Text>
       <AppCard>
-        <AppCard.Title title="Empresas" />
+        <AppCard.Title>Empresas</AppCard.Title>
         <AppCard.Content>
-          {loading ? (
+          {isLoading ? (
             <Text>Carregando...</Text>
           ) : (
             <Text variant="headlineLarge">{stats.pendingCount ?? 0}</Text>
