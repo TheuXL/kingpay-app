@@ -42,8 +42,14 @@ export { financialService } from './financialService';
 // Export anticipationService as an object
 export * as anticipationService from './anticipationService';
 
-// Export pixKeyService as an object
-export * as pixKeyService from './pixKeyService';
+// Export pixKeyService
+export { approvePixKey, getPixKeys, listAllPixKeys, simulateListPixKeys } from './pixKeyService';
+export const pixKeyService = {
+  getPixKeys,
+  listAllPixKeys,
+  approvePixKey,
+  simulateListPixKeys
+};
 
 // Re-export functions from dashboardService for backwards compatibility
 export {

@@ -1,30 +1,32 @@
 /**
  * GET (Sem URL) (Cadastro de User)
  * 
- * Este endpoint foi listado sem uma URL, o que impossibilita testá-lo.
- * Conforme a documentação:
- * - Método: GET
- * - Funcionalidade: Desconhecida devido à URL vazia
- * - Payload: Nenhum
- * - Regras de Negócio: Desconhecidas
+ * This test documents an endpoint that was listed in the API documentation
+ * without a URL, making it impossible to test properly.
  * 
- * Observação: A URL vazia impede que esse endpoint seja acionado
+ * According to the documentation:
+ * - Method: GET
+ * - Functionality: User Registration (as per documentation)
+ * - Payload: None
+ * - Business Rules: Unknown
+ * 
+ * Note: An endpoint without a URL cannot be tested directly
  */
 
 describe('Empty URL Endpoint', () => {
-  it('should be skipped due to missing URL', () => {
-    // Este teste é um placeholder para documentar o endpoint sem URL
-    console.log('Endpoint com URL vazia não pode ser testado');
-    console.log('Detalhes do endpoint na documentação:');
+  it('should document the issue with missing URL endpoint', () => {
+    // This test serves as documentation for the endpoint with missing URL
+    console.log('Endpoint with empty URL cannot be tested');
+    console.log('Endpoint details from documentation:');
     console.log({
-      método: 'GET',
-      funcionalidade: 'Cadastro de User (conforme documentação)',
-      url: '[VAZIA]',
-      payload: 'Nenhum',
-      regras_de_negócio: 'Desconhecidas'
+      method: 'GET',
+      functionality: 'User Registration (as per documentation)',
+      url: '[EMPTY]',
+      payload: 'None',
+      business_rules: 'Unknown'
     });
     
-    // Sempre passa para não quebrar a suite de testes
+    // This test always passes as it's just documentation
     expect(true).toBe(true);
   });
 }); 

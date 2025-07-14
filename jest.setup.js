@@ -1,8 +1,11 @@
-// Definir explicitamente o ambiente como teste
+// Load environment variables from .env.test file
+require('dotenv').config({ path: '.env.test' });
+
+// Set environment explicitly to test
 process.env.NODE_ENV = 'test';
 
-// Configurar variáveis de ambiente para testes apenas se não estiverem definidas
-// Isso permite que os testes usem as variáveis reais do app quando disponíveis
+// Configure environment variables for tests only if not defined
+// This allows tests to use real app variables when available
 if (!process.env.EXPO_PUBLIC_SUPABASE_URL) {
   process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://ntswqzoftcvzsxwbmsef.supabase.co';
 }
@@ -11,10 +14,27 @@ if (!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY) {
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50c3dxem9mdGN2enN4d2Jtc2VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg1MzkyODUsImV4cCI6MjA2NDExNTI4NX0.-UUHbgSHmEd86qgdcwgZ5p6sjBkBOPKNWls9dMaDsgs';
 }
 
-// Configuração para evitar vazamentos de memória em testes assíncronos
-jest.setTimeout(30000); // 30 segundos de timeout para testes
+// Set test user credentials if not defined
+if (!process.env.TEST_USER_EMAIL) {
+  process.env.TEST_USER_EMAIL = 'test@example.com';
+}
 
-// Mock para react-native
+if (!process.env.TEST_USER_PASSWORD) {
+  process.env.TEST_USER_PASSWORD = 'test-password';
+}
+
+if (!process.env.TEST_EXISTING_EMAIL) {
+  process.env.TEST_EXISTING_EMAIL = 'existing@example.com';
+}
+
+// Log test configuration
+console.log('Setting up test environment...');
+console.log('Test user email:', process.env.TEST_USER_EMAIL);
+
+// Configure timeout to avoid memory leaks in async tests
+jest.setTimeout(30000); // 30 seconds timeout for tests
+
+// Mock for react-native
 jest.mock('react-native', () => {
   return {
     Platform: {
@@ -36,14 +56,14 @@ jest.mock('react-native', () => {
   };
 });
 
-// Mock para expo-secure-store
+// Mock for expo-secure-store
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   setItemAsync: jest.fn(() => Promise.resolve()),
   deleteItemAsync: jest.fn(() => Promise.resolve())
 }));
 
-// Mock para o AsyncStorage
+// Mock for AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve()),
@@ -55,7 +75,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   multiRemove: jest.fn(() => Promise.resolve()),
 }));
 
-// Polyfill para URL e URLSearchParams no ambiente Node.js
+// Polyfill for URL and URLSearchParams in Node.js environment
 if (typeof global.URL !== 'function') {
   const { URL } = require('url');
   global.URL = URL;
@@ -66,12 +86,12 @@ if (typeof global.URLSearchParams !== 'function') {
   global.URLSearchParams = URLSearchParams;
 }
 
-// Polyfill para self (usado pelo Supabase)
+// Polyfill for self (used by Supabase)
 if (typeof global.self === 'undefined') {
   global.self = global;
 }
 
-// Polyfill para localStorage no ambiente Node.js
+// Polyfill for localStorage in Node.js environment
 if (typeof global.localStorage === 'undefined') {
   class LocalStorageMock {
     constructor() {
@@ -98,6 +118,6 @@ if (typeof global.localStorage === 'undefined') {
   global.localStorage = new LocalStorageMock();
 }
 
-// Variáveis globais para compartilhar entre testes
+// Global variables to share between tests
 global.testTicketId = null;
 global.directApiTicketId = null; 

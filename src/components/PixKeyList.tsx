@@ -11,8 +11,17 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { PaginationOptions, PixKey, pixKeyService } from '../services/pixKeyService';
+import { pixKeyService } from '../services';
+import { PixKey } from '../types/pixKey';
 import { formatDate } from '../utils/formatters';
+
+// Define the options interface based on the service
+interface PixKeyListOptions {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}
 
 interface PixKeyListProps {
   onSelectPixKey?: (pixKey: PixKey) => void;
@@ -43,7 +52,7 @@ const PixKeyList: React.FC<PixKeyListProps> = ({ onSelectPixKey, onApprovePixKey
       
       setError(null);
       
-      const options: PaginationOptions = {
+      const options: PixKeyListOptions = {
         page: refresh ? 1 : page,
         limit: 10,
         status: statusFilter,

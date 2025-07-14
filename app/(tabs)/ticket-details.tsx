@@ -1,28 +1,29 @@
-import { ticketService } from '@/services/ticketService';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Divider, Text, TextInput } from 'react-native-paper';
 
-interface Ticket {
-  id: string;
-  subject: string;
-  message: string;
-  status: string;
-  created_at: string;
-  attachment_url?: string;
-}
+import { useTicketStore } from '@/store/ticketStore';
+import { TicketStatus } from '@/types/ticket';
 
 export default function TicketDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const ticketId = id || '';
 
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [newMessage, setNewMessage] = useState('');
-  const [sendingMessage, setSendingMessage] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const { 
+    selectedTicket, 
+    ticketMessages, 
+    loading, 
+    error, 
+    fetchTicket, 
+    fetchMessages, 
+    markAsRead, 
+    sendMessage, 
+    updateStatus 
+  } = useTicketStore();
 
   useEffect(() => {
     if (ticketId) {
@@ -31,37 +32,18 @@ export default function TicketDetailsScreen() {
   }, [ticketId]);
 
   const fetchTicketDetails = async () => {
-    setLoading(true);
     try {
       // Fetch ticket details
-      const ticketResponse = await ticketService.getTicket(ticketId);
-      if (ticketResponse.success && ticketResponse.data) {
-        setTicket(ticketResponse.data);
-      } else {
-        console.error('Error fetching ticket:', ticketResponse.error);
-        Alert.alert('Erro', 'Não foi possível carregar os detalhes do ticket.');
-      }
-
-      // Fetch ticket messages
-      const messagesResponse = await ticketService.getMessages({
-        ticket_id: ticketId,
-        page: 1,
-        per_page: 50
-      });
-      if (messagesResponse.success && messagesResponse.data) {
-        setMessages(messagesResponse.data);
-      } else {
-        console.error('Error fetching messages:', messagesResponse.error);
-      }
-
-      // Mark messages as read
-      await ticketService.markMessagesAsRead(ticketId);
+      await fetchTicket(ticketId);
       
-    } catch (error) {
-      console.error('Error in ticket details:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao carregar os dados do ticket.');
+      // Fetch ticket messages
+      await fetchMessages(ticketId);
+      
+      // Mark messages as read
+      await markAsRead(ticketId);
+    } catch (err) {
+      console.error('Error in ticket details:', err);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   };
@@ -77,44 +59,28 @@ export default function TicketDetailsScreen() {
       return;
     }
 
-    setSendingMessage(true);
-    try {
-      const response = await ticketService.sendMessage({
-        ticket_id: ticketId,
-        message: newMessage.trim()
-      });
+    const success = await sendMessage({
+      ticket_id: ticketId,
+      message: newMessage.trim()
+    });
 
-      if (response.success) {
-        setNewMessage('');
-        fetchTicketDetails(); // Refresh to show the new message
-      } else {
-        Alert.alert('Erro', 'Não foi possível enviar a mensagem. Tente novamente.');
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao enviar a mensagem.');
-    } finally {
-      setSendingMessage(false);
+    if (success) {
+      setNewMessage('');
+    } else {
+      Alert.alert('Erro', error || 'Não foi possível enviar a mensagem. Tente novamente.');
     }
   };
 
-  const handleUpdateStatus = async (status: 'open' | 'in_progress' | 'closed') => {
-    try {
-      const response = await ticketService.updateStatus({
-        ticket_id: ticketId,
-        status
-      });
+  const handleUpdateStatus = async (status: TicketStatus) => {
+    const success = await updateStatus({
+      ticket_id: ticketId,
+      status
+    });
 
-      if (response.success) {
-        // Update local ticket state to reflect the change
-        setTicket((prev: Ticket | null) => prev ? { ...prev, status } : null);
-        Alert.alert('Sucesso', `Status atualizado para ${getStatusLabel(status)}`);
-      } else {
-        Alert.alert('Erro', 'Não foi possível atualizar o status do ticket.');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao atualizar o status do ticket.');
+    if (success) {
+      Alert.alert('Sucesso', `Status atualizado para ${getStatusLabel(status)}`);
+    } else {
+      Alert.alert('Erro', error || 'Não foi possível atualizar o status do ticket.');
     }
   };
 
@@ -122,6 +88,7 @@ export default function TicketDetailsScreen() {
     switch (status) {
       case 'open': return 'Aberto';
       case 'in_progress': return 'Em Andamento';
+      case 'resolved': return 'Resolvido';
       case 'closed': return 'Fechado';
       default: return status;
     }
@@ -131,6 +98,7 @@ export default function TicketDetailsScreen() {
     switch (status) {
       case 'open': return styles.statusOpen;
       case 'in_progress': return styles.statusInProgress;
+      case 'resolved': return styles.statusResolved;
       case 'closed': return styles.statusClosed;
       default: return {};
     }
@@ -149,7 +117,7 @@ export default function TicketDetailsScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: ticket ? `Ticket: ${ticket.subject}` : 'Detalhes do Ticket',
+          title: selectedTicket ? `Ticket: ${selectedTicket.subject}` : 'Detalhes do Ticket',
           headerShown: true,
         }}
       />
@@ -160,32 +128,32 @@ export default function TicketDetailsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {ticket ? (
+        {selectedTicket ? (
           <>
             <Card style={styles.ticketCard}>
               <Card.Content>
-                <Text variant="titleLarge">{ticket.subject}</Text>
+                <Text variant="titleLarge">{selectedTicket.subject}</Text>
                 <View style={styles.metaContainer}>
                   <Text variant="bodySmall" style={styles.metaText}>
-                    Criado em: {new Date(ticket.created_at).toLocaleString()}
+                    Criado em: {new Date(selectedTicket.created_at).toLocaleString()}
                   </Text>
                   <View style={styles.statusContainer}>
                     <Text
                       style={[
                         styles.statusBadge,
-                        getStatusStyle(ticket.status),
+                        getStatusStyle(selectedTicket.status),
                       ]}
                     >
-                      {getStatusLabel(ticket.status)}
+                      {getStatusLabel(selectedTicket.status)}
                     </Text>
                   </View>
                 </View>
                 <Divider style={styles.divider} />
-                <Text variant="bodyMedium">{ticket.message}</Text>
+                <Text variant="bodyMedium">{selectedTicket.message}</Text>
                 
-                {ticket.attachment_url && (
+                {selectedTicket.attachment_url && (
                   <Text variant="bodySmall" style={styles.attachmentLink}>
-                    Anexo: {ticket.attachment_url}
+                    Anexo: {selectedTicket.attachment_url}
                   </Text>
                 )}
               </Card.Content>
@@ -198,24 +166,32 @@ export default function TicketDetailsScreen() {
                   <Button 
                     mode="outlined" 
                     onPress={() => handleUpdateStatus('open')}
-                    style={[styles.statusButton, ticket.status === 'open' && styles.activeStatusButton]}
-                    labelStyle={ticket.status === 'open' ? styles.activeStatusLabel : {}}
+                    style={[styles.statusButton, selectedTicket.status === 'open' && styles.activeStatusButton]}
+                    labelStyle={selectedTicket.status === 'open' ? styles.activeStatusLabel : {}}
                   >
                     Aberto
                   </Button>
                   <Button 
                     mode="outlined" 
                     onPress={() => handleUpdateStatus('in_progress')}
-                    style={[styles.statusButton, ticket.status === 'in_progress' && styles.activeStatusButton]}
-                    labelStyle={ticket.status === 'in_progress' ? styles.activeStatusLabel : {}}
+                    style={[styles.statusButton, selectedTicket.status === 'in_progress' && styles.activeStatusButton]}
+                    labelStyle={selectedTicket.status === 'in_progress' ? styles.activeStatusLabel : {}}
                   >
                     Em Andamento
                   </Button>
                   <Button 
                     mode="outlined" 
+                    onPress={() => handleUpdateStatus('resolved')}
+                    style={[styles.statusButton, selectedTicket.status === 'resolved' && styles.activeStatusButton]}
+                    labelStyle={selectedTicket.status === 'resolved' ? styles.activeStatusLabel : {}}
+                  >
+                    Resolvido
+                  </Button>
+                  <Button 
+                    mode="outlined" 
                     onPress={() => handleUpdateStatus('closed')}
-                    style={[styles.statusButton, ticket.status === 'closed' && styles.activeStatusButton]}
-                    labelStyle={ticket.status === 'closed' ? styles.activeStatusLabel : {}}
+                    style={[styles.statusButton, selectedTicket.status === 'closed' && styles.activeStatusButton]}
+                    labelStyle={selectedTicket.status === 'closed' ? styles.activeStatusLabel : {}}
                   >
                     Fechado
                   </Button>
@@ -227,8 +203,8 @@ export default function TicketDetailsScreen() {
               <Card.Content>
                 <Text variant="titleMedium" style={styles.sectionTitle}>Mensagens</Text>
                 
-                {messages.length > 0 ? (
-                  messages.map((msg, index) => (
+                {ticketMessages.length > 0 ? (
+                  ticketMessages.map((msg, index) => (
                     <View key={msg.id || index} style={styles.messageItem}>
                       <View style={styles.messageHeader}>
                         <Text variant="bodySmall" style={styles.messageAuthor}>
@@ -246,11 +222,11 @@ export default function TicketDetailsScreen() {
                           Anexo: {msg.attachment_url}
                         </Text>
                       )}
-                      {index < messages.length - 1 && <Divider style={styles.messageDivider} />}
+                      {index < ticketMessages.length - 1 && <Divider style={styles.messageDivider} />}
                     </View>
                   ))
                 ) : (
-                  <Text style={styles.noMessages}>Nenhuma mensagem disponível.</Text>
+                  <Text style={styles.noMessages}>Nenhuma mensagem encontrada.</Text>
                 )}
               </Card.Content>
             </Card>
@@ -260,18 +236,18 @@ export default function TicketDetailsScreen() {
                 <Text variant="titleMedium" style={styles.sectionTitle}>Responder</Text>
                 <TextInput
                   mode="outlined"
-                  label="Sua mensagem"
                   value={newMessage}
                   onChangeText={setNewMessage}
+                  placeholder="Digite sua mensagem..."
                   multiline
-                  numberOfLines={4}
+                  numberOfLines={3}
                   style={styles.replyInput}
                 />
                 <Button
                   mode="contained"
                   onPress={handleSendMessage}
-                  loading={sendingMessage}
-                  disabled={sendingMessage || !newMessage.trim()}
+                  loading={loading}
+                  disabled={loading || !newMessage.trim()}
                   style={styles.sendButton}
                 >
                   Enviar Mensagem
@@ -280,7 +256,14 @@ export default function TicketDetailsScreen() {
             </Card>
           </>
         ) : (
-          <Text style={styles.notFound}>Ticket não encontrado ou você não tem permissão para visualizá-lo.</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              {error || 'Não foi possível carregar os detalhes do ticket.'}
+            </Text>
+            <Button mode="contained" onPress={handleRefresh}>
+              Tentar Novamente
+            </Button>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -292,6 +275,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  scrollView: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -300,36 +286,19 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
   },
-  scrollView: {
-    flex: 1,
-  },
   ticketCard: {
     margin: 16,
     marginBottom: 8,
-  },
-  actionsCard: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  messagesCard: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-  replyCard: {
-    margin: 16,
-    marginTop: 8,
   },
   metaContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginVertical: 8,
+    marginTop: 8,
+    marginBottom: 8,
   },
   metaText: {
     color: '#666',
-  },
-  divider: {
-    marginVertical: 8,
   },
   statusContainer: {
     flexDirection: 'row',
@@ -350,16 +319,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8e1',
     color: '#ff8f00',
   },
-  statusClosed: {
+  statusResolved: {
     backgroundColor: '#e8f5e9',
-    color: '#388e3c',
+    color: '#2e7d32',
+  },
+  statusClosed: {
+    backgroundColor: '#f5f5f5',
+    color: '#616161',
+  },
+  divider: {
+    marginVertical: 12,
   },
   attachmentLink: {
-    marginTop: 8,
     color: '#1976d2',
+    marginTop: 8,
+  },
+  actionsCard: {
+    margin: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
   sectionTitle: {
     marginBottom: 12,
+  },
+  statusButtonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statusButton: {
+    marginBottom: 8,
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  activeStatusButton: {
+    backgroundColor: '#e3f2fd',
+  },
+  activeStatusLabel: {
+    color: '#1976d2',
+  },
+  messagesCard: {
+    margin: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
   messageItem: {
     marginBottom: 12,
@@ -376,42 +378,36 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   messageContent: {
-    marginVertical: 4,
+    marginBottom: 4,
   },
   messageDivider: {
-    marginVertical: 12,
+    marginTop: 8,
+    marginBottom: 8,
   },
   noMessages: {
     textAlign: 'center',
-    marginVertical: 16,
     color: '#666',
+    fontStyle: 'italic',
+  },
+  replyCard: {
+    margin: 16,
+    marginTop: 8,
+    marginBottom: 24,
   },
   replyInput: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sendButton: {
-    marginTop: 8,
+    alignSelf: 'flex-end',
   },
-  notFound: {
+  errorContainer: {
+    margin: 16,
+    padding: 16,
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#d32f2f',
+    marginBottom: 16,
     textAlign: 'center',
-    margin: 24,
-    fontSize: 16,
-    color: '#666',
-  },
-  statusButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  statusButton: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  activeStatusButton: {
-    backgroundColor: '#e3f2fd',
-  },
-  activeStatusLabel: {
-    color: '#1976d2',
-    fontWeight: 'bold',
   },
 }); 

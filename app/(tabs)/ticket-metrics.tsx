@@ -1,49 +1,21 @@
-import { ticketService } from '@/services/ticketService';
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Card, Text } from 'react-native-paper';
 
-interface TicketMetrics {
-  total_tickets: number;
-  open_tickets: number;
-  in_progress_tickets: number;
-  closed_tickets: number;
-  avg_response_time?: number;
-  avg_resolution_time?: number;
-  tickets_last_7_days: number;
-  tickets_last_30_days: number;
-}
+import { useTicketStore } from '@/store/ticketStore';
 
 export default function TicketMetricsScreen() {
-  const [metrics, setMetrics] = useState<TicketMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { ticketMetrics, loading, error, fetchMetrics } = useTicketStore();
 
   useEffect(() => {
     fetchMetrics();
   }, []);
 
-  const fetchMetrics = async () => {
-    setLoading(true);
-    try {
-      const response = await ticketService.getMetrics();
-      if (response.success && response.data) {
-        setMetrics(response.data);
-      } else {
-        console.error('Error fetching metrics:', response.error);
-      }
-    } catch (error) {
-      console.error('Error fetching metrics:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchMetrics();
+    fetchMetrics().finally(() => setRefreshing(false));
   };
 
   if (loading && !refreshing) {
@@ -70,7 +42,7 @@ export default function TicketMetricsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {metrics ? (
+        {ticketMetrics ? (
           <>
             <Card style={styles.card}>
               <Card.Title title="Resumo de Tickets" />
@@ -78,7 +50,7 @@ export default function TicketMetricsScreen() {
                 <View style={styles.metricsRow}>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.total_tickets || 0}
+                      {ticketMetrics.total_tickets || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Total de Tickets
@@ -86,7 +58,7 @@ export default function TicketMetricsScreen() {
                   </View>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.open_tickets || 0}
+                      {ticketMetrics.open_tickets || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tickets Abertos
@@ -97,7 +69,7 @@ export default function TicketMetricsScreen() {
                 <View style={styles.metricsRow}>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.in_progress_tickets || 0}
+                      {ticketMetrics.in_progress_tickets || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Em Andamento
@@ -105,7 +77,7 @@ export default function TicketMetricsScreen() {
                   </View>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.closed_tickets || 0}
+                      {ticketMetrics.closed_tickets || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tickets Fechados
@@ -121,7 +93,7 @@ export default function TicketMetricsScreen() {
                 <View style={styles.metricsRow}>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.avg_response_time ? `${metrics.avg_response_time}h` : 'N/A'}
+                      {ticketMetrics.avg_response_time ? `${ticketMetrics.avg_response_time}h` : 'N/A'}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tempo Médio de Resposta
@@ -129,7 +101,7 @@ export default function TicketMetricsScreen() {
                   </View>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.avg_resolution_time ? `${metrics.avg_resolution_time}h` : 'N/A'}
+                      {ticketMetrics.avg_resolution_time ? `${ticketMetrics.avg_resolution_time}h` : 'N/A'}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tempo Médio de Resolução
@@ -145,7 +117,7 @@ export default function TicketMetricsScreen() {
                 <View style={styles.metricsRow}>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.tickets_last_7_days || 0}
+                      {ticketMetrics.tickets_last_7_days || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tickets nos Últimos 7 Dias
@@ -153,7 +125,7 @@ export default function TicketMetricsScreen() {
                   </View>
                   <View style={styles.metricItem}>
                     <Text variant="headlineMedium" style={styles.metricValue}>
-                      {metrics.tickets_last_30_days || 0}
+                      {ticketMetrics.tickets_last_30_days || 0}
                     </Text>
                     <Text variant="bodySmall" style={styles.metricLabel}>
                       Tickets nos Últimos 30 Dias
@@ -164,7 +136,11 @@ export default function TicketMetricsScreen() {
             </Card>
           </>
         ) : (
-          <Text style={styles.noData}>Nenhuma métrica disponível.</Text>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              {error || 'Não foi possível carregar as métricas.'}
+            </Text>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -212,6 +188,17 @@ const styles = StyleSheet.create({
   noData: {
     textAlign: 'center',
     margin: 24,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 24,
+  },
+  errorText: {
+    textAlign: 'center',
     fontSize: 16,
     color: '#666',
   },

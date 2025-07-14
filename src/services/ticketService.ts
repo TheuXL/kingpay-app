@@ -1,33 +1,14 @@
+import {
+    CreateTicketParams,
+    GetMessagesParams,
+    SendMessageParams,
+    Ticket,
+    TicketMessage,
+    TicketMetrics,
+    TicketResponse,
+    UpdateStatusParams
+} from '../types/ticket';
 import { supabase } from './supabase';
-
-interface CreateTicketParams {
-  subject: string;
-  message: string;
-  attachment_url?: string;
-}
-
-interface SendMessageParams {
-  ticket_id: string;
-  message: string;
-  attachment_url?: string;
-}
-
-interface GetMessagesParams {
-  ticket_id: string;
-  page?: number;
-  per_page?: number;
-}
-
-interface UpdateStatusParams {
-  ticket_id: string;
-  status: 'open' | 'in_progress' | 'closed';
-}
-
-interface TicketResponse {
-  success: boolean;
-  data?: any;
-  error?: any;
-}
 
 /**
  * Service for handling ticket operations
@@ -41,7 +22,7 @@ export const ticketService = {
     subject,
     message,
     attachment_url,
-  }: CreateTicketParams): Promise<TicketResponse> => {
+  }: CreateTicketParams): Promise<TicketResponse<Ticket>> => {
     try {
       // Based on the Postman collection, we need to format the request with action and payload
       const payload = {
@@ -60,12 +41,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -73,7 +55,7 @@ export const ticketService = {
    * Get all tickets for the current user
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  getTickets: async (): Promise<TicketResponse> => {
+  getTickets: async (): Promise<TicketResponse<Ticket[]>> => {
     try {
       // Based on the Postman collection, we need to use the action-based approach
       const payload = {
@@ -88,12 +70,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -105,7 +88,7 @@ export const ticketService = {
     ticket_id,
     message,
     attachment_url,
-  }: SendMessageParams): Promise<TicketResponse> => {
+  }: SendMessageParams): Promise<TicketResponse<TicketMessage>> => {
     try {
       const payload = {
         action: 'send_message',
@@ -122,12 +105,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -139,7 +123,7 @@ export const ticketService = {
     ticket_id,
     page = 1,
     per_page = 20,
-  }: GetMessagesParams): Promise<TicketResponse> => {
+  }: GetMessagesParams): Promise<TicketResponse<TicketMessage[]>> => {
     try {
       const payload = {
         action: 'get_messages',
@@ -156,12 +140,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -169,7 +154,7 @@ export const ticketService = {
    * Check if a ticket has unread messages
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  checkUnreadMessages: async (): Promise<TicketResponse> => {
+  checkUnreadMessages: async (): Promise<TicketResponse<{ tickets: Ticket[] }>> => {
     try {
       const payload = {
         action: 'check_unread_messages',
@@ -182,12 +167,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -195,7 +181,7 @@ export const ticketService = {
    * Mark messages in a ticket as read
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  markMessagesAsRead: async (ticket_id: string): Promise<TicketResponse> => {
+  markMessagesAsRead: async (ticket_id: string): Promise<TicketResponse<{ updated: boolean }>> => {
     try {
       const payload = {
         action: 'mark_messages_as_read',
@@ -210,12 +196,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -223,7 +210,7 @@ export const ticketService = {
    * Get a single ticket by ID
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  getTicket: async (ticket_id: string): Promise<TicketResponse> => {
+  getTicket: async (ticket_id: string): Promise<TicketResponse<Ticket>> => {
     try {
       const payload = {
         action: 'get_ticket',
@@ -238,12 +225,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -251,7 +239,7 @@ export const ticketService = {
    * Get ticket metrics
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  getMetrics: async (): Promise<TicketResponse> => {
+  getMetrics: async (): Promise<TicketResponse<TicketMetrics>> => {
     try {
       const payload = {
         action: 'get_metrics',
@@ -264,12 +252,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 
@@ -277,7 +266,7 @@ export const ticketService = {
    * Update ticket status
    * Endpoint: POST https://{{base_url}}/functions/v1/support-tickets
    */
-  updateStatus: async ({ ticket_id, status }: UpdateStatusParams): Promise<TicketResponse> => {
+  updateStatus: async ({ ticket_id, status }: UpdateStatusParams): Promise<TicketResponse<{ updated: boolean }>> => {
     try {
       const payload = {
         action: 'update_status',
@@ -293,12 +282,13 @@ export const ticketService = {
       });
 
       if (error) {
-        return { success: false, error };
+        return { success: false, error: { message: error.message } };
       }
 
       return { success: true, data };
     } catch (error) {
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      return { success: false, error: { message: errorMessage } };
     }
   },
 }; 

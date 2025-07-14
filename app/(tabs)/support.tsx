@@ -5,56 +5,34 @@ import { ActivityIndicator, Badge, Card, IconButton, Text } from 'react-native-p
 
 import { AppButton } from '@/components/common/AppButton';
 import { AppTextInput } from '@/components/common/AppTextInput';
-import { ticketService } from '@/services/ticketService';
+import { useTicketStore } from '@/store/ticketStore';
 
 export default function SupportScreen() {
   const router = useRouter();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [loadingTickets, setLoadingTickets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  
+  const { 
+    tickets, 
+    unreadTickets, 
+    loading, 
+    error, 
+    fetchTickets, 
+    fetchUnreadMessages, 
+    createTicket 
+  } = useTicketStore();
 
   useEffect(() => {
     fetchTickets();
-    checkUnreadMessages();
+    fetchUnreadMessages();
   }, []);
-
-  const fetchTickets = async () => {
-    setLoadingTickets(true);
-    try {
-      const response = await ticketService.getTickets();
-      if (response.success) {
-        setTickets(response.data || []);
-      } else {
-        console.error('Error fetching tickets:', response.error);
-      }
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
-    } finally {
-      setLoadingTickets(false);
-      setRefreshing(false);
-    }
-  };
-
-  const checkUnreadMessages = async () => {
-    try {
-      const response = await ticketService.checkUnreadMessages();
-      if (response.success) {
-        setHasUnreadMessages(response.data?.has_unread || false);
-      }
-    } catch (error) {
-      console.error('Error checking unread messages:', error);
-    }
-  };
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchTickets();
-    checkUnreadMessages();
+    Promise.all([fetchTickets(), fetchUnreadMessages()])
+      .finally(() => setRefreshing(false));
   };
 
   const handleCreateTicket = async () => {
@@ -63,40 +41,34 @@ export default function SupportScreen() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const response = await ticketService.createTicket({
-        subject,
-        message,
-        attachment_url: attachmentUrl || undefined,
-      });
+    const ticketId = await createTicket({
+      subject,
+      message,
+      attachment_url: attachmentUrl || undefined,
+    });
 
-      if (response.success) {
-        Alert.alert('Sucesso', 'Ticket criado com sucesso!');
-        setSubject('');
-        setMessage('');
-        setAttachmentUrl('');
-        fetchTickets(); // Atualizar a lista de tickets
-      } else {
-        Alert.alert('Erro', 'Não foi possível criar o ticket. Tente novamente.');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao criar o ticket.');
-      console.error('Create ticket error:', error);
-    } finally {
-      setLoading(false);
+    if (ticketId) {
+      Alert.alert('Sucesso', 'Ticket criado com sucesso!');
+      setSubject('');
+      setMessage('');
+      setAttachmentUrl('');
+    } else {
+      Alert.alert('Erro', error || 'Não foi possível criar o ticket. Tente novamente.');
     }
   };
 
   const navigateToTicketDetails = (ticketId: string) => {
-    // @ts-ignore - Ignorar erro de tipagem aqui
-    router.navigate('ticket-details', { id: ticketId });
+    router.push({
+      pathname: '/ticket-details',
+      params: { id: ticketId }
+    } as any);
   };
 
   const navigateToMetrics = () => {
-    // @ts-ignore - Ignorar erro de tipagem aqui
-    router.navigate('ticket-metrics');
+    router.push('/ticket-metrics' as any);
   };
+
+  const hasUnreadMessages = unreadTickets.length > 0;
 
   return (
     <View style={styles.container}>
@@ -169,7 +141,7 @@ export default function SupportScreen() {
             />
           </View>
 
-          {loadingTickets && !refreshing ? (
+          {loading && !refreshing ? (
             <ActivityIndicator style={styles.loader} />
           ) : tickets.length > 0 ? (
             tickets.map((ticket, index) => (
@@ -182,7 +154,7 @@ export default function SupportScreen() {
                   <Card.Content>
                     <View style={styles.ticketHeader}>
                       <Text variant="titleMedium">{ticket.subject}</Text>
-                      {ticket.has_unread_messages && (
+                      {unreadTickets.some(t => t.id === ticket.id) && (
                         <Badge style={styles.unreadBadge}>Novo</Badge>
                       )}
                     </View>

@@ -17,24 +17,25 @@ interface AuthResponse {
   refresh_token?: string;
   user?: any;
   error?: any;
+  session?: any;
 }
 
 /**
- * Service para gerenciar operações de autenticação
+ * Service for managing authentication operations
  */
 export const authService = {
   /**
-   * Realiza o login do usuário
-   * @param {string|object} emailOrParams - Email do usuário ou objeto com email e password
-   * @param {string} [password] - Senha do usuário (opcional se emailOrParams for um objeto)
-   * @returns {Promise<object>} - Dados do usuário logado
+   * Logs in a user
+   * @param {string|object} emailOrParams - User's email or object with email and password
+   * @param {string} [password] - User's password (optional if emailOrParams is an object)
+   * @returns {Promise<object>} - Logged in user data
    */
   login: async (emailOrParams: any, password?: string) => {
     try {
       let email = '';
       let pass = '';
       
-      // Verificar se os parâmetros foram passados como objeto ou separadamente
+      // Check if parameters were passed as an object or separately
       if (typeof emailOrParams === 'object') {
         email = emailOrParams.email;
         pass = emailOrParams.password;
@@ -43,31 +44,43 @@ export const authService = {
         pass = password || '';
       }
       
+      // Check if Supabase client is available
+      if (!supabase || !supabase.auth) {
+        console.error("Supabase client not available");
+        return { error: { message: "Authentication client not available" } };
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password: pass,
       });
 
       if (error) {
-        console.error("Erro de login:", error.message);
+        console.error("Login error:", error.message);
         return { error };
       }
 
-      console.log("Login bem-sucedido para:", email);
+      console.log("Login successful for:", email);
       return data;
     } catch (error: any) {
-      console.error("Erro no serviço de autenticação:", error.message);
+      console.error("Authentication service error:", error.message);
       return { error };
     }
   },
 
   /**
-   * Criar uma nova conta de usuário
+   * Creates a new user account
    * Endpoint: POST https://{{base_url}}/auth/v1/signup
    */
   signup: async ({ email, password, name }: SignupParams): Promise<AuthResponse> => {
     try {
-      // Se tiver um nome, adiciona aos metadados do usuário
+      // Check if Supabase client is available
+      if (!supabase || !supabase.auth) {
+        console.error("Supabase client not available");
+        return { error: { message: "Authentication client not available" } };
+      }
+      
+      // If there's a name, add it to the user metadata
       const options = name ? { data: { full_name: name } } : undefined;
       
       const { data, error } = await supabase.auth.signUp({
@@ -77,48 +90,60 @@ export const authService = {
       });
 
       if (error) {
-        console.error("Erro de cadastro:", error.message);
+        console.error("Registration error:", error.message);
         return { error };
       }
 
-      console.log("Cadastro bem-sucedido para:", email);
+      console.log("Registration successful for:", email);
       return {
         access_token: data.session?.access_token,
         refresh_token: data.session?.refresh_token,
         user: data.user,
       };
     } catch (error: any) {
-      console.error("Erro ao criar conta:", error.message || error);
+      console.error("Account creation error:", error.message || error);
       return { error };
     }
   },
 
   /**
-   * Logout do usuário atual
+   * Logs out the current user
    */
   logout: async (): Promise<{ error?: any }> => {
     try {
+      // Check if Supabase client is available
+      if (!supabase || !supabase.auth) {
+        console.error("Supabase client not available");
+        return { error: { message: "Authentication client not available" } };
+      }
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Erro ao fazer logout:", error.message);
+        console.error("Logout error:", error.message);
         return { error };
       }
-      console.log("Logout realizado com sucesso");
+      console.log("Logout successful");
       return {};
     } catch (error: any) {
-      console.error("Erro ao fazer logout:", error.message || error);
+      console.error("Logout error:", error.message || error);
       return { error };
     }
   },
 
   /**
-   * Obter a sessão atual
+   * Gets the current session
    */
   getSession: async () => {
     try {
+      // Check if Supabase client is available
+      if (!supabase || !supabase.auth) {
+        console.error("Supabase client not available");
+        return { error: { message: "Authentication client not available" } };
+      }
+      
       const { data, error } = await supabase.auth.getSession();
       if (error) {
-        console.error("Erro ao obter sessão:", error.message);
+        console.error("Error getting session:", error.message);
         return { error };
       }
       return {
@@ -126,20 +151,26 @@ export const authService = {
         user: data.session?.user,
       };
     } catch (error: any) {
-      console.error("Erro ao obter sessão:", error.message || error);
+      console.error("Error getting session:", error.message || error);
       return { error };
     }
   },
   
   /**
-   * Verificar se o token ainda é válido
+   * Checks if the token is still valid
    */
   checkToken: async (): Promise<boolean> => {
     try {
+      // Check if Supabase client is available
+      if (!supabase || !supabase.auth) {
+        console.error("Supabase client not available");
+        return false;
+      }
+      
       const { data } = await supabase.auth.getSession();
       return !!data.session;
     } catch (error) {
-      console.error("Erro ao verificar token:", error);
+      console.error("Error checking token:", error);
       return false;
     }
   },
