@@ -48,3 +48,17 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+git push --set-upstream origin main
+
+yarn start
+
+npx expo install expo-dev-client
+
+npx expo login
+
+eas build --profile development --platform android
+
+npx expo start --dev-client
+
+npm run test:real

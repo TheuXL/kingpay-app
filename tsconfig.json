@@ -1,84 +1,51 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
     "jsx": "react-native",
     "lib": [
-      "ESNext"
+      "dom",
+      "esnext"
     ],
-    "module": "commonjs",
     "moduleResolution": "node",
     "noEmit": true,
-    "target": "ESNext",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "target": "esnext",
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
-      ],
-      "@/src/*": [
-        "./src/*"
-      ],
-      "@/app/*": [
-        "./app/*"
-      ],
-      "@/components": [
-        "./src/components"
+        "src/*"
       ],
       "@/components/*": [
-        "./src/components/*"
+        "src/components/*"
       ],
-      "@/contexts": [
-        "./src/contexts"
+      "@/features/*": [
+        "src/features/*"
       ],
       "@/contexts/*": [
-        "./src/contexts/*"
-      ],
-      "@/services": [
-        "./src/services"
-      ],
-      "@/services/*": [
-        "./src/services/*"
-      ],
-      "@/hooks": [
-        "./src/hooks"
-      ],
-      "@/hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@/theme": [
-        "./src/theme"
-      ],
-      "@/theme/*": [
-        "./src/theme/*"
-      ],
-      "@/store": [
-        "./src/store"
-      ],
-      "@/store/*": [
-        "./src/store/*"
-      ],
-      "@/utils": [
-        "./src/utils"
-      ],
-      "@/utils/*": [
-        "./src/utils/*"
-      ],
-      "@/types": [
-        "./src/types"
+        "src/contexts/*"
       ],
       "@/types/*": [
-        "./src/types/*"
+        "src/types/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/config/*": [
+        "src/config/*"
       ]
     }
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "**/*.tsx"
   ],
-  "extends": "expo/tsconfig.base"
+  "exclude": [
+    "node_modules"
+  ]
 }
