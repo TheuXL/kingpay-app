@@ -1,264 +1,88 @@
 /**
  * Módulo: Dashboard e Relatórios
- * Endpoints 53-56 da documentação INTEGRACAO.md
  */
+import { supabase } from '@/lib/supabase';
+import { getAuthHeaders } from '@/utils/auth';
+import { formatDateForApi } from '@/utils/formatters';
 
-import { supabase } from '../../../lib/supabase';
-
-/**
- * Tipos de dados do Dashboard
- */
-export interface DashboardData {
-  totalRevenue: number;
-  totalTransactions: number;
-  pendingAmount: number;
-  growthPercentage: number;
-  chartData: ChartDataPoint[];
-  topSellers: TopSeller[];
-  topProducts: TopProduct[];
-}
-
-export interface ChartDataPoint {
-  date: string;
-  amount: number;
-  transactions: number;
-}
-
-export interface TopSeller {
-  companyId: string;
-  companyName: string;
-  totalAmount: number;
-  totalTransactions: number;
-}
-
-export interface TopProduct {
-  productName: string;
-  quantity: number;
-  totalAmount: number;
-}
-
-/**
- * Módulo: Dashboard e Relatórios
- * Endpoints 53-56 da documentação INTEGRACAO.md
- */
-export class DashboardService {
-
-  /**
-   * Endpoint 53: Obter Dados do Dashboard (POST /functions/v1/dados-dashboard)
-   * Propósito: Buscar todos os KPIs e métricas para a tela principal.
-   */
-  async getDashboardData(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        `dados-dashboard?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'POST' } // Método POST mesmo sem corpo, conforme documentação
-      );
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar dados do dashboard:', error instanceof Error ? error.message : 'Erro desconhecido');
-      throw error;
+// Endpoint: /whitelabel-financeiro (Usado na Home e Carteira)
+export const getFinancialSummary = async () => {
+    const headers = await getAuthHeaders();
+    const { data, error } = await supabase.functions.invoke('whitelabel-financeiro', { 
+        method: 'POST', 
+        headers 
+    });
+    if (error) {
+        console.error('Erro na chamada de getFinancialSummary:', error);
+        throw error;
     }
-  }
+    return data;
+};
 
-  /**
-   * Endpoint 54: Obter Relatório de Top Sellers (GET /functions/v1/analytics-reports/top-sellers/...)
-   * Propósito: Listar as empresas que mais venderam em um período.
-   */
-  async getTopSellers(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        `analytics-reports/top-sellers/${startDate}/${endDate}`,
-        { method: 'GET' } // Confirmado como GET
-      );
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro no relatório de top sellers:', error instanceof Error ? error.message : 'Erro desconhecido');
-      throw error;
-    }
-  }
-
-  /**
-   * Endpoint 55: Obter Relatório de Top Produtos (POST /functions/v1/dados-dashboard/top-produtos)
-   * Propósito: Listar os produtos mais vendidos.
-   */
-  async getTopProducts(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        `dados-dashboard/top-produtos?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'POST' }
-      );
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro no relatório de top produtos:', error instanceof Error ? error.message : 'Erro desconhecido');
-      throw error;
-    }
-  }
-
-  /**
-   * Endpoint 56: Obter Dados para Gráfico de Faturamento (POST /functions/v1/dados-dashboard/grafico)
-   * Propósito: Buscar dados agregados por período (dia/mês) para plotar um gráfico.
-   */
-  async getChartData(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        `dados-dashboard/grafico?start_date=${startDate}&end_date=${endDate}`,
-        { method: 'POST' }
-      );
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar dados do gráfico:', error instanceof Error ? error.message : 'Erro desconhecido');
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/dados-dashboard/infos-adicionais
-   */
-  async getAdditionalInfo(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('dados-dashboard/infos-adicionais', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar informações adicionais:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/dados-dashboard/top-sellers
-   */
-  async getTopSellersDashboard(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('dados-dashboard/top-sellers', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar top sellers do dashboard:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/dados-dashboard/providers
-   */
-  async getProvidersDashboard(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('dados-dashboard/providers', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar providers do dashboard:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/dados-dashboard/acquirer
-   */
-  async getAcquirerDashboard(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('dados-dashboard/acquirer', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar acquirer do dashboard:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/faturamento-whitelabel
-   */
-  async getWhitelabelRevenue(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('faturamento-whitelabel', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar faturamento whitelabel:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * POST /functions/v1/whitelabel-financeiro
-   */
-  async getWhitelabelFinancial(payload: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke('whitelabel-financeiro', {
-        method: 'POST',
-        body: payload,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar financeiro whitelabel:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * GET /analytics-reports/top-sellers/:startDate/:endDate
-   * Propósito: Obter um relatório de mais vendidos dentro de um período.
-   */
-  async getTopSellersReport(startDate: string, endDate: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`analytics-reports/top-sellers/${startDate}/${endDate}`, {
-        method: 'GET',
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar relatório de top sellers:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Método para obter dados do gráfico de vendas (alias para getChartData)
-   * Este método está sendo chamado pelo componente DashboardMain
-   */
-  async getSalesChart(startDate: string, endDate: string): Promise<ChartDataPoint[]> {
-    return await this.getChartData(startDate, endDate);
-  }
-
-  // Métodos de compatibilidade com a interface existente
-  async getDashboardSummary() {
-    const today = new Date();
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+// Endpoint: /dados-dashboard (Usado no Dashboard de Métricas)
+export const getDashboardData = async (startDate: Date, endDate: Date) => {
+    const headers = await getAuthHeaders();
+    const url = `dados-dashboard?start_date=${formatDateForApi(startDate)}&end_date=${formatDateForApi(endDate)}`;
     
-    return await this.getDashboardData(
-      lastMonth.toISOString().split('T')[0],
-      today.toISOString().split('T')[0]
-    );
-  }
+    const { data, error } = await supabase.functions.invoke(url, {
+        method: 'POST',
+        headers,
+    });
 
-  async getMetrics(startDate?: string, endDate?: string) {
-    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const end = endDate || new Date().toISOString().split('T')[0];
+    if (error) {
+        console.error('Erro na chamada de getDashboardData:', error);
+        throw error;
+    }
+    return data;
+};
+
+// Endpoint: /dados-dashboard/grafico (Usado na Home)
+export const getChartData = async (startDate: Date, endDate: Date) => {
+    const headers = await getAuthHeaders();
+    const url = `dados-dashboard/grafico?start_date=${formatDateForApi(startDate)}&end_date=${formatDateForApi(endDate)}`;
     
-    return await this.getDashboardData(start, end);
-  }
-}
+    const { data, error } = await supabase.functions.invoke(url, {
+        method: 'POST',
+        headers,
+    });
 
-export const dashboardService = new DashboardService(); 
+    if (error) {
+        console.error('Erro na chamada de getChartData:', error);
+        throw error;
+    }
+    return data;
+};
+
+// Endpoint: /dados-dashboard/infos-adicionais (Usado no Dashboard de Métricas)
+export const getAdditionalInfo = async (startDate: Date, endDate: Date) => {
+    const headers = await getAuthHeaders();
+    const url = `dados-dashboard/infos-adicionais?start_date=${formatDateForApi(startDate)}&end_date=${formatDateForApi(endDate)}`;
+
+    const { data, error } = await supabase.functions.invoke(url, {
+        method: 'POST',
+        headers,
+    });
+
+    if (error) {
+        console.error('Erro na chamada de getAdditionalInfo:', error);
+        throw error;
+    }
+    return data;
+};
+
+// Endpoint: /transactions/summary (Usado na Home para Análise de Vendas)
+export const getTransactionSummary = async (startDate: Date, endDate: Date) => {
+    const headers = await getAuthHeaders();
+    const url = `transactions/summary?start_date=${formatDateForApi(startDate)}&end_date=${formatDateForApi(endDate)}`;
+
+    const { data, error } = await supabase.functions.invoke(url, {
+        method: 'GET', // Alterado de POST para GET
+        headers,
+    });
+
+    if (error) {
+        console.error('Erro na chamada de getTransactionSummary:', error);
+        throw error;
+    }
+    return data;
+}; 

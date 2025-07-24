@@ -10,56 +10,134 @@
  */
 
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../../../contexts/AppContext';
+import { formatCurrency } from '../../../utils/currency';
+import { walletService } from '../services';
 
-interface Balance {
-  id: string;
-  title: string;
-  amount: number;
-  type: 'available' | 'pending' | 'total';
+interface WalletData {
+  available_balance: number;
+  pending_balance: number;
+  reserve_balance: number;
+  total_balance: number;
 }
 
 const WalletScreen: React.FC = () => {
-    // Removida a lógica de busca de dados, estado de loading, etc.
-    // O estado de refreshing pode ser mantido para uma futura tentativa de recarregar.
-    const [refreshing, setRefreshing] = useState(false);
+    const { user } = useAuth();
     const router = useRouter();
 
-    const onRefresh = () => {
-        // Lógica para tentar recarregar os dados pode ser adicionada aqui no futuro
-        console.log("Tentando recarregar os dados da carteira...");
-    }
+    const [walletData, setWalletData] = useState<WalletData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadWalletData = useCallback(async () => {
+        if (!user?.id) return;
+
+        setLoading(true);
+        setError(null);
+        try {
+            console.log(`[REQUEST] Buscando dados da carteira para o usuário: ${user.id}`);
+            const data = await walletService.getWalletSummary(user.id);
+            console.log(`[RESPONSE] Resposta crua da API da carteira:`, JSON.stringify(data, null, 2));
+
+            if (data) {
+                console.log('[SOURCE] Decisão: Renderizando dados da carteira recebidos da API.');
+                setWalletData(data);
+            } else {
+                console.warn('[SOURCE] Decisão: API não retornou dados para a carteira. Renderizando estado vazio.');
+                setWalletData(null);
+            }
+        } catch (err) {
+            console.error("[ERROR] Falha ao buscar dados da carteira:", err);
+            setError('Não foi possível carregar os dados da sua carteira no momento.');
+            console.log('[SOURCE] Decisão: Renderizando estado de erro na carteira.');
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        setLoading(true);
+        loadWalletData();
+    }, [loadWalletData]);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadWalletData();
+        setRefreshing(false);
+    };
 
     const navigateToMovements = () => {
         router.push('/(app)/(tabs)/movements');
-    }
+    };
+
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#101828" />
+                    <Text style={styles.loadingText}>Carregando sua carteira...</Text>
+                </View>
+            );
+        }
+
+        if (error || !walletData || walletData.total_balance === 0) {
+            return (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorTitle}>Dados Indisponíveis</Text>
+                    <Text style={styles.errorMessage}>
+                        {error || "Não foi possível carregar os dados da sua carteira no momento."}
+                    </Text>
+                </View>
+            );
+        }
+
+        return (
+            <>
+                <View style={styles.totalBalanceContainer}>
+                    <Text style={styles.totalAmount}>{formatCurrency(walletData.total_balance / 100)}</Text>
+                    <Text style={styles.subtitle}>Saldo Total</Text>
+                </View>
+
+                <View style={styles.balancesContainer}>
+                    <View style={styles.balanceCard}>
+                        <Text style={styles.balanceTitle}>Disponível para saque</Text>
+                        <Text style={styles.balanceAmount}>{formatCurrency(walletData.available_balance / 100)}</Text>
+                    </View>
+                    <View style={styles.balanceCard}>
+                        <Text style={styles.balanceTitle}>Pendente</Text>
+                        <Text style={styles.balanceAmount}>{formatCurrency(walletData.pending_balance / 100)}</Text>
+                    </View>
+                    <View style={styles.balanceCard}>
+                        <Text style={styles.balanceTitle}>Reserva Financeira</Text>
+                        <Text style={styles.balanceAmount}>{formatCurrency(walletData.reserve_balance / 100)}</Text>
+                    </View>
+                </View>
+            </>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                showsVerticalScrollIndicator={false}
             >
                 <View style={styles.header}>
                     <Text style={styles.title}>Carteira</Text>
                 </View>
 
-                <View style={styles.errorContainer}>
-                    <Text style={styles.errorTitle}>Serviço Indisponível</Text>
-                    <Text style={styles.errorMessage}>
-                        Não foi possível carregar os dados da sua carteira no momento.
-                        Por favor, tente novamente mais tarde.
-                    </Text>
-                </View>
+                {renderContent()}
                 
-                {/* As seções de ações podem ser mantidas, pois podem levar a outras telas que funcionam */}
                 <View style={styles.actionsSection}>
                     <TouchableOpacity style={styles.actionButton} onPress={navigateToMovements}>
                         <Text style={styles.actionButtonText}>Ver Movimentações</Text>
                     </TouchableOpacity>
-                    {/* ... botões de ação */}
+                    {/* Outros botões podem ser adicionados aqui */}
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -71,9 +149,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f0f2f5',
     },
-    scrollView: {
-        flex: 1,
-    },
     header: {
         padding: 20,
     },
@@ -82,52 +157,57 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#101828',
     },
+    totalBalanceContainer: {
+        alignItems: 'center',
+        marginVertical: 20,
+    },
     totalAmount: {
-        fontSize: 48,
+        fontSize: 40,
         fontWeight: 'bold',
-        color: '#333',
-        marginTop: 8,
+        color: '#101828',
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
+        color: '#667085',
         marginTop: 4,
     },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        color: '#101828',
-    },
     balancesContainer: {
-        margin: 20,
+        marginHorizontal: 20,
     },
     balanceCard: {
         backgroundColor: '#fff',
         padding: 20,
         borderRadius: 12,
         marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 2.22,
+        elevation: 3,
     },
     balanceTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 8,
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#475467',
     },
     balanceAmount: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#101828',
+        marginTop: 8,
     },
     loadingContainer: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 12,
         alignItems: 'center',
+        justifyContent: 'center',
+        padding: 40,
     },
     loadingText: {
+        marginTop: 10,
         fontSize: 16,
-        color: '#666',
+        color: '#667085',
     },
     errorContainer: {
         backgroundColor: '#fff',
@@ -137,9 +217,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     errorTitle: {
-        fontSize: 22,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#b91c1c',
+        color: '#D92D20',
         marginBottom: 10,
     },
     errorMessage: {
@@ -147,44 +227,16 @@ const styles = StyleSheet.create({
         color: '#667085',
         textAlign: 'center',
     },
-    infoContainer: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        alignItems: 'center',
-    },
-    infoTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 8,
-    },
-    infoText: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 4,
-    },
-    balanceSection: {
-        marginHorizontal: 20,
-    },
-    balanceLabel: {
-        fontSize: 14,
-        color: '#667085',
-    },
-    balanceValue: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#101828',
-        marginTop: 4,
-    },
     actionsSection: {
         marginHorizontal: 20,
         marginTop: 20,
+        paddingBottom: 20,
     },
     actionButton: {
         backgroundColor: '#fff',
-        padding: 20,
+        padding: 16,
         borderRadius: 12,
-        marginBottom: 12,
+        alignItems: 'center',
     },
     actionButtonText: {
         fontSize: 16,

@@ -107,6 +107,7 @@ export const TransactionsScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchText, setSearchText] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   // Estatísticas resumidas
   const [stats, setStats] = useState({
@@ -119,30 +120,48 @@ export const TransactionsScreen: React.FC = () => {
     totalAmount: 0,
   });
 
-  const loadTransactions = async () => {
+  const loadTransactions = async (filter: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      if (!user?.id) {
-        throw new Error('Usuário não autenticado');
-      }
-      const response = await transactionService.getTransactions(100, 0);
-      const convertedTransactions: TransactionData[] = response.transactions.map((transaction: any) => ({
+      console.log(`[REQUEST] Buscando transações com filtro: ${filter}`);
+      const response = await transactionService.getTransactions(50, 0, { status: filter === 'all' ? undefined : filter });
+      console.log(`[RESPONSE] Resposta crua da API:`, JSON.stringify(response, null, 2));
+
+      if (response && Array.isArray(response.transactions)) {
+        const convertedTransactions: TransactionData[] = response.transactions
+          .filter((transaction: any) => transaction.id && transaction.chargedamount)
+          .map((transaction: any) => ({
         id: transaction.id,
-        description: transaction.description || 'Transação',
-        amount: transaction.chargedamount || 0,
+            description: transaction.items?.[0]?.title || 'Transação',
+            amount: transaction.chargedamount,
         status: transaction.status as TransactionData['status'],
-        created_at: transaction.createdat || new Date().toISOString(),
-        payment_method: (transaction.paymentmethod || 'PIX').toUpperCase() as TransactionData['payment_method'],
-        customer_name: transaction.clientid,
+            created_at: transaction.createdat || new Date().toISOString(), // CORRIGIDO: de createdAt para createdat
+            payment_method: (transaction.paymentMethod || 'N/A').toUpperCase() as TransactionData['payment_method'],
+            customer_name: transaction.client_name || 'Não identificado', 
         transaction_id: transaction.id
       }));
 
-      setTransactions(convertedTransactions);
-      calculateStats(convertedTransactions);
-      applyFilter('all', convertedTransactions);
+        console.log(`[RENDER_DATA] Dados convertidos para renderização:`, JSON.stringify(convertedTransactions, null, 2));
 
-    } catch (error) {
-      console.error('❌ Erro ao carregar transações:', error);
+        if (convertedTransactions.length > 0) {
+          console.log(`[SOURCE] Decisão: Renderizando ${convertedTransactions.length} transações da API.`);
+      setTransactions(convertedTransactions);
+          calculateStats(convertedTransactions); // ADICIONADO: para atualizar os contadores
+        } else {
+          console.log(`[SOURCE] Decisão: Renderizando estado vazio (API não retornou transações válidas).`);
+          setTransactions([]);
+          calculateStats([]); // ADICIONADO: para limpar os contadores
+        }
+      } else {
+        console.warn('[SOURCE] Decisão: Resposta da API inválida ou sem array de transações. Renderizando estado vazio.');
+        setTransactions([]);
+        calculateStats([]); // ADICIONADO: para limpar os contadores
+      }
+    } catch (err) {
+      console.error("[ERROR] Falha ao buscar transações:", err);
+      setError('Não foi possível carregar as transações.');
+      console.log('[SOURCE] Decisão: Renderizando estado de erro.');
     } finally {
       setLoading(false);
     }
@@ -193,7 +212,7 @@ export const TransactionsScreen: React.FC = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadTransactions();
+    await loadTransactions(activeFilter);
     setRefreshing(false);
   };
 
@@ -203,7 +222,7 @@ export const TransactionsScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    loadTransactions();
+    loadTransactions('all'); // Carrega todas as transações ao iniciar
   }, []);
 
   const renderTransactionItem = ({ item }: { item: TransactionData }) => <TransactionItem item={item} />;
@@ -223,6 +242,7 @@ export const TransactionsScreen: React.FC = () => {
         />
       </View>
       <FilterTabs activeFilter={activeFilter} onFilterChange={applyFilter} stats={stats} />
+      {error && <Text style={styles.errorText}>{error}</Text>}
       <FlatList
         data={filteredTransactions}
         renderItem={renderTransactionItem}
@@ -349,5 +369,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  errorText: {
+    color: '#f44336',
+    textAlign: 'center',
+    padding: 10,
+    fontSize: 16,
   },
 }); 

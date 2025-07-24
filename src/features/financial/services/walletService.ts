@@ -1,4 +1,23 @@
-import { supabase } from '../../../lib/supabase';
+/**
+ * Módulo: Financeiro (Carteira, Extrato)
+ */
+import { supabase } from '@/lib/supabase';
+import { getAuthHeaders } from '@/utils/auth';
+
+// Endpoint: /extrato (Usado na Carteira)
+export const getWalletStatement = async () => {
+    const headers = await getAuthHeaders();
+    const { data, error } = await supabase.functions.invoke('extrato', {
+        method: 'GET',
+        headers
+    });
+
+    if (error) {
+        console.error('Erro ao invocar a Edge Function: extrato', 'Detalhes:', error);
+        throw error;
+    }
+    return data;
+};
 
 /**
  * Módulo: Carteira, Saques e Antecipações
@@ -24,7 +43,6 @@ export class WalletService {
       return data;
     } catch (error) {
       console.error('Erro ao solicitar saque:', error instanceof Error ? error.message : 'Erro desconhecido');
-      throw error;
     }
   }
 

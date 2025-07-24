@@ -13,21 +13,23 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Modal,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
-import { edgeFunctionsService } from '../../../services/edgeFunctions';
+import { useAuth } from '../../../contexts/AppContext'; // Restaurado
 import { formatCurrency } from '../../../utils/currency';
+import { showToast } from '../../../utils/toast'; // Caminho relativo corrigido
+import { getWithdrawals } from '../../admin/services/adminService'; // Corrigido
+import { updateWithdrawalStatus } from '../services/withdrawalService'; // Corrigido
 
 interface WithdrawalAdmin {
   id: string;
@@ -62,38 +64,43 @@ export function AdminWithdrawalsScreen() {
   const loadWithdrawals = async () => {
     try {
       setError(null);
+      setLoading(true); // Inicia o loading aqui
       console.log('💸 Carregando saques para admin...');
 
-      const response = await edgeFunctionsService.getWithdrawals({ 
+      const response = await getWithdrawals({ 
         limit: 100, 
         offset: 0 
       });
 
-      if (response.success && response.data) {
-        const withdrawalData: WithdrawalAdmin[] = response.data.map((item: any) => ({
+      const { data } = response;
+
+      if (data && data.withdrawals) {
+        // A API já deve retornar os campos corretos, mas mantemos a modelagem para segurança
+        const withdrawalData: WithdrawalAdmin[] = data.withdrawals.map((item: any) => ({
           id: item.id,
           user_id: item.user_id || 'unknown',
           requested_amount: parseFloat(item.requestedamount || item.amount || '0'),
           description: item.description || 'Saque solicitado',
           status: item.status || 'pending',
-          is_pix: item.isPix || false,
+          is_pix: item.isPix || item.is_pix || false,
           created_at: item.created_at || new Date().toISOString(),
           updated_at: item.updated_at,
           reason_for_denial: item.reason_for_denial,
-          user_email: item.user_email,
-          user_name: item.user_name,
+          user_email: item.user_email || item.user?.email, // A API pode aninhar os dados do usuário
+          user_name: item.user_name || item.user?.full_name,
         }));
 
         setWithdrawals(withdrawalData);
         console.log(`✅ ${withdrawalData.length} saques carregados para admin`);
       } else {
-        console.log('⚠️ Nenhum saque encontrado');
+        console.log('⚠️ Nenhum saque encontrado ou resposta inesperada');
         setWithdrawals([]);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Erro desconhecido';
       setError(errorMessage);
       console.error('❌ Erro ao carregar saques:', errorMessage);
+      showToast(`Erro ao carregar saques: ${errorMessage}`, 'error'); // Adiciona um toast para feedback
     } finally {
       setLoading(false);
     }
@@ -128,16 +135,16 @@ export function AdminWithdrawalsScreen() {
               setActionLoading(withdrawal.id);
               console.log('✅ Aprovando saque:', withdrawal.id);
 
-              // TODO: Implementar aprovação quando endpoint estiver disponível
-              // const result = await withdrawalService.approveWithdrawal(withdrawal.id);
-              
-              // Por enquanto, simular sucesso
-              Alert.alert('Sucesso', 'Saque aprovado com sucesso!');
+              await updateWithdrawalStatus(
+                withdrawal.id,
+                'approved',
+              );
+              showToast('Saque aprovado com sucesso!');
               await loadWithdrawals(); // Recarregar dados
 
-            } catch (error) {
+            } catch (error: any) {
               console.error('❌ Erro ao aprovar saque:', error);
-              Alert.alert('Erro', 'Erro ao aprovar saque. Tente novamente.');
+              showToast(`Erro ao aprovar: ${error.message}`, 'error');
             } finally {
               setActionLoading(null);
             }
@@ -163,19 +170,20 @@ export function AdminWithdrawalsScreen() {
       setActionLoading(selectedWithdrawal.id);
       console.log('❌ Negando saque:', selectedWithdrawal.id, 'Motivo:', denyReason);
 
-      // TODO: Implementar negação quando endpoint estiver disponível
-      // const result = await withdrawalService.denyWithdrawal(selectedWithdrawal.id, denyReason);
-      
-      // Por enquanto, simular sucesso
-      Alert.alert('Sucesso', 'Saque negado com sucesso!');
+      await updateWithdrawalStatus(
+        selectedWithdrawal.id,
+        'cancelled',
+        denyReason,
+      );
+      showToast('Saque negado com sucesso!');
       setDenyModalVisible(false);
       setSelectedWithdrawal(null);
       setDenyReason('');
       await loadWithdrawals(); // Recarregar dados
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erro ao negar saque:', error);
-      Alert.alert('Erro', 'Erro ao negar saque. Tente novamente.');
+      showToast(`Erro ao negar: ${error.message}`, 'error');
     } finally {
       setActionLoading(null);
     }

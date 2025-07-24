@@ -1,17 +1,34 @@
-import { Redirect, Stack } from 'expo-router';
-import { useAuth } from '../../contexts/AppContext';
+import BottomTabBar from '@/navigation/BottomTabBar';
+import { Tabs } from 'expo-router';
+import React from 'react';
 
 export default function AppLayout() {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    // Pode-se adicionar um componente de loading aqui
-    return null;
-  }
-
-  if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Tabs
+      tabBar={() => <BottomTabBar />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen 
+        name="index" 
+        options={{ href: null }} // Rota principal, controlada pelo BottomTabBar
+      />
+      <Tabs.Screen 
+        name="jornada" 
+        options={{ href: null }} // Oculta da tab bar padrão
+      />
+      <Tabs.Screen 
+        name="conta" 
+        options={{ href: null }} // Oculta da tab bar padrão
+      />
+      
+      {/* Telas que não estão na tab bar principal */}
+      <Tabs.Screen name="dashboard" options={{ href: null }} />
+      <Tabs.Screen name="carteira" options={{ href: null }} />
+      <Tabs.Screen name="payment-links" options={{ href: null }} />
+      <Tabs.Screen name="transactions" options={{ href: null }} />
+      {/* Adicionar outras rotas que não devem aparecer na tab bar */}
+    </Tabs>
+  );
 } 

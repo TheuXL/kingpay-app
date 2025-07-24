@@ -8,7 +8,6 @@ interface AuthContextType {
   isLoading: boolean;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
-  isAuthenticated: boolean; // Adicionando a propriedade que faltava
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,14 +17,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuth = async () => {
-    setIsLoading(true);
-    const response = await authService.getCurrentUser();
-    if (response.success) {
-      setUser(response.session?.user ?? null);
-    } else {
-      setUser(null);
+    // Não precisa de setIsLoading(true) aqui, pois já é setado no estado inicial
+    try {
+        const { data, error } = await authService.getUser();
+        
+        if (error) {
+            console.warn("Check auth error:", error.message);
+            setUser(null);
+        } else {
+            setUser(data.user);
+            if (data.user) {
+                console.log('✅ Sessão ativa encontrada na inicialização:', { email: data.user.email, userId: data.user.id });
+            }
+        }
+    } catch (e) {
+        console.error("Erro fatal no checkAuth:", e);
+        setUser(null);
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -33,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const logout = async () => {
-    await authService.logout();
+    await authService.signOut(); // Corrigindo para a função signOut do serviço
     setUser(null);
   };
 

@@ -76,3 +76,13 @@ export function isValorVazio(valor: number | bigint | null | undefined): boolean
   if (typeof valor === 'bigint') return valor === 0n;
   return valor === 0;
 } 
+
+/**
+ * Formata um valor percentual para exibição
+ * @param valor Valor percentual (ex: 5.5 para 5.5%)
+ * @param decimals Número de casas decimais (padrão: 1)
+ * @returns String formatada (ex: "5.5%")
+ */
+export function formatPercentage(valor: number, decimals: number = 1): string {
+  return `${valor.toFixed(decimals)}%`;
+} 

@@ -1,7 +1,6 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../contexts/AppContext';
 
@@ -20,7 +19,7 @@ const AppLayout = () => {
     // Se o usuário está autenticado mas não está no grupo de rotas do app,
     // redireciona para o dashboard.
     if (isAuthenticated && !inAppGroup) {
-      router.replace('/dashboard');
+      router.replace('/(app)');
     } 
     // Se o usuário não está autenticado mas ainda está no grupo de rotas do app,
     // redireciona para a tela de login.
@@ -29,15 +28,8 @@ const AppLayout = () => {
     }
   }, [isLoading, isAuthenticated, segments]);
 
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
+  // O Stack é renderizado incondicionalmente. O useEffect cuida do redirecionamento.
+  // Isso evita que a árvore de componentes seja desmontada e remontada.
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(auth)" />
@@ -50,10 +42,10 @@ const AppLayout = () => {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <AppLayout />
-      </AuthProvider>
+    <AuthProvider>
+      <StatusBar style="light" />
+      <AppLayout />
+    </AuthProvider>
     </GestureHandlerRootView>
   );
 } 

@@ -16,18 +16,20 @@ export interface PaymentLink {
   short_url?: string;
 }
 
-export interface CreatePaymentLinkData {
+export interface PaymentLinkPayload {
   nome: string;
   valor: number;
-  formas_de_pagamento: string[];
+  formas_de_pagamento: ('pix' | 'cartao' | 'boleto')[];
   description?: string;
   metadata?: Record<string, any>;
   max_uses?: number;
   expiration_date?: string;
-  payment_methods?: string[];
+  max_parcelamento?: number;
+  solicitar_endereco?: boolean;
+  ativo?: boolean;
 }
 
-export interface UpdatePaymentLinkData extends Partial<CreatePaymentLinkData> {
+export interface UpdatePaymentLinkData extends Partial<PaymentLinkPayload> {
   is_active?: boolean;
 }
 
