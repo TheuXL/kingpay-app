@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { useAuth } from '../../../contexts/AppContext';
 import { formatCurrency } from '../../../utils/currency';
-import { transactionService } from '../services';
+import { getTransactionHistory } from '../services';
 // ✅ IMPORTAR UTILITÁRIOS DE VALIDAÇÃO DE TEXTO
 
 interface TransactionData {
@@ -125,11 +125,11 @@ export const TransactionsScreen: React.FC = () => {
     setError(null);
     try {
       console.log(`[REQUEST] Buscando transações com filtro: ${filter}`);
-      const response = await transactionService.getTransactions(50, 0, { status: filter === 'all' ? undefined : filter });
+      const response = await getTransactionHistory({ status: filter === 'all' ? undefined : filter });
       console.log(`[RESPONSE] Resposta crua da API:`, JSON.stringify(response, null, 2));
 
-      if (response && Array.isArray(response.transactions)) {
-        const convertedTransactions: TransactionData[] = response.transactions
+      if (response && response.data) {
+        const convertedTransactions: TransactionData[] = response.data
           .filter((transaction: any) => transaction.id && transaction.chargedamount)
           .map((transaction: any) => ({
         id: transaction.id,

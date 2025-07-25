@@ -23,10 +23,10 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
+import { useUserData } from '../../../contexts/UserDataContext';
 import { formatCurrency } from '../../../utils/currency';
 import { showToast } from '../../../utils/toast';
-import { calculateTaxes } from '../services/TaxCalculatorService';
+import { calculateTax } from '../services/TaxCalculatorService';
 
 type PaymentMethod = 'PIX' | 'CARD' | 'BOLETO';
 
@@ -38,7 +38,7 @@ interface CalculatedTaxes {
 
 export default function TaxCalculatorScreen() {
   const router = useRouter();
-  const { user } = useAuth(); // Para obter o company_id
+  const { company } = useUserData(); // Usar o novo hook
 
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('PIX');
@@ -55,10 +55,7 @@ export default function TaxCalculatorScreen() {
       return;
     }
     
-    // Assumindo que o company_id está disponível no objeto do usuário
-    // Adapte se o caminho for diferente (ex: user.company.id)
-    const companyId = (user as any)?.company_id || (user as any)?.company?.[0]?.id;
-    if (!companyId) {
+    if (!company?.id) {
         showToast('ID da empresa não encontrado. Não é possível calcular.', 'error');
         return;
     }
@@ -68,22 +65,22 @@ export default function TaxCalculatorScreen() {
     setResult(null);
 
     try {
-      const { data, error: apiError } = await calculateTaxes({
-        company_id: companyId,
+      const response = await calculateTax({
+        company_id: company.id,
         valor: numericAmount,
         payment_method: paymentMethod,
         parcelas: paymentMethod === 'CARD' ? installments : 1,
       });
 
-      if (apiError) throw apiError;
-      
-      setResult(data);
+      if (response.success) {
+        setResult(response.data);
+      } else {
+        throw new Error(response.error || 'Erro ao calcular taxas.');
+      }
       
     } catch (e: any) {
-      const errorMessage = e.response?.data?.message || e.message || 'Erro ao calcular taxas.';
-      setError(errorMessage);
-      showToast(errorMessage, 'error');
-      console.error(e.response?.data || e);
+      setError(e.message);
+      showToast(e.message, 'error');
     } finally {
       setIsLoading(false);
     }

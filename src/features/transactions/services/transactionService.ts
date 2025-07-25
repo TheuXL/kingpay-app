@@ -7,11 +7,12 @@ import { getAuthHeaders } from '@/utils/auth';
 /**
  * Endpoint: /resumo-transacoes
  */
-export const getTransactionsSummary = async () => {
+export const getTransactionsSummary = async (body: any) => {
     const headers = await getAuthHeaders();
     const { data, error } = await supabase.functions.invoke('resumo-transacoes', {
         method: 'POST',
         headers,
+        body,
     });
     if (error) {
         console.error('Erro ao invocar a Edge Function: resumo-transacoes', 'Detalhes:', error);

@@ -10,6 +10,7 @@
  */
 
 import { supabase } from '../../../lib/supabase';
+import { edgeFunctionsProxy } from '../../../services/api/EdgeFunctionsProxy';
 
 export interface Company {
   id: string;
@@ -183,24 +184,9 @@ export class CompanyService {
    * GET /functions/v1/companies/:id
    */
   async getCompanyById(companyId: string): Promise<Company> {
-    try {
-      console.log('🔍 Buscando empresa por ID:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar empresa:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar empresa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}`);
+    if (response.success && response.data.company) return response.data.company;
+    throw new Error(response.error || 'Erro ao buscar empresa.');
   }
 
   /**
@@ -266,24 +252,12 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/taxas
    */
   async getCompanyTaxes(companyId: string): Promise<CompanyTaxes> {
-    try {
-      console.log('💰 Buscando taxas da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/taxas`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar taxas:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar taxas:', error);
-      throw error;
+    const response = await edgeFunctionsProxy.get<CompanyTaxes>(`companies/${companyId}/taxas`);
+    if (response.success && response.data) {
+      // A API retorna as taxas dentro de um objeto { taxas: ... }
+      return response.data.taxas;
     }
+    throw new Error(response.error || 'Erro ao buscar taxas da empresa');
   }
 
   /**
@@ -318,24 +292,9 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/config
    */
   async getCompanyConfig(companyId: string): Promise<CompanyConfig> {
-    try {
-      console.log('⚙️ Buscando configurações da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/config`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar configurações:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar configurações:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/config`);
+    if (response.success && response.data.config) return response.data.config;
+    throw new Error(response.error || 'Erro ao buscar config da empresa.');
   }
 
   /**
@@ -370,24 +329,9 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/reserva
    */
   async getCompanyReserve(companyId: string): Promise<CompanyReserve> {
-    try {
-      console.log('🏦 Buscando reserva da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/reserva`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar reserva:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar reserva:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/reserva`);
+    if (response.success && response.data.reserva) return response.data.reserva;
+    throw new Error(response.error || 'Erro ao buscar reserva da empresa.');
   }
 
   /**
@@ -422,24 +366,9 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/docs
    */
   async getCompanyDocuments(companyId: string): Promise<CompanyDocuments> {
-    try {
-      console.log('📄 Buscando documentos da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/docs`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar documentos:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar documentos:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/docs`);
+    if (response.success && response.data.docs) return response.data.docs;
+    throw new Error(response.error || 'Erro ao buscar documentos da empresa.');
   }
 
   /**

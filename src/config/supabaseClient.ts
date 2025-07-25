@@ -8,9 +8,9 @@
  * - Configuração otimizada para Edge Functions
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthFlowType, SupabaseClientOptions, createClient } from '@supabase/supabase-js';
 import { AppState } from 'react-native';
+import { SecureStoreAdapter } from './SecureStoreAdapter';
 import { ENV } from './env';
 
 // Configuração do cliente Supabase
@@ -20,7 +20,7 @@ const supabaseAnonKey = ENV.SUPABASE_ANON_KEY;
 // Opções otimizadas para Edge Functions
 const supabaseOptions: SupabaseClientOptions<'public'> = {
   auth: {
-    storage: AsyncStorage,
+    storage: SecureStoreAdapter, // Usa o armazenamento seguro
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
@@ -44,6 +44,9 @@ export const supabaseClient = createClient(
   supabaseAnonKey,
   supabaseOptions
 );
+
+// Export também como 'supabase' para compatibilidade
+export const supabase = supabaseClient;
 
 console.log('🚀 Supabase Client inicializado:', {
   url: supabaseUrl,
@@ -71,6 +74,4 @@ AppState.addEventListener('change', (nextAppState) => {
   if (nextAppState === 'active') {
     supabaseClient.auth.getSession();
   }
-});
-
-export default supabaseClient; 
+}); 

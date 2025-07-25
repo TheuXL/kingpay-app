@@ -1,9 +1,9 @@
+import { authService } from '@/features/auth/services/authService';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../components/common/Button';
 import { FormInput } from '../../../components/common/FormInput';
-import { authService } from '../services/authService';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -12,17 +12,14 @@ const ForgotPasswordScreen = () => {
 
   const handleResetPassword = async () => {
     setLoading(true);
-    const { success, error } = await authService.resetPassword(email);
+    const { data, error } = await authService.resetPasswordForEmail(email);
     setLoading(false);
 
-    if (success) {
-      Alert.alert(
-        'E-mail Enviado',
-        'Se o e-mail estiver correto, você receberá um link para redefinir sua senha.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+    if (error) {
+      Alert.alert('Erro', error.message);
     } else {
-      Alert.alert('Erro', error?.message || 'Não foi possível enviar o e-mail de recuperação.');
+      Alert.alert('Sucesso', 'Um link para redefinir sua senha foi enviado para seu e-mail.');
+      router.back();
     }
   };
 

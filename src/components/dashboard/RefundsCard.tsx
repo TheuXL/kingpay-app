@@ -1,22 +1,19 @@
 import { colors } from '@/theme/colors';
+import type { DashboardData } from '@/types/dashboard';
 import { formatCurrency } from '@/utils/formatters';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface RefundsCardProps {
-  data: {
-    sumRefunded: number;
-    sumChargedback: number;
-    taxaEstorno: number;
-  } | null;
+  data: DashboardData | null;
 }
 
 const RefundsCard: React.FC<RefundsCardProps> = ({ data }) => {
   if (!data) return null;
 
-  const total = (data.sumRefunded || 0) + (data.sumChargedback || 0);
+  const total = (data.sumRefunded || 0) + (data.sumChargeback || 0);
   const refundedPercent = total > 0 ? ((data.sumRefunded || 0) / total) * 100 : 0;
-  const chargedbackPercent = total > 0 ? ((data.sumChargedback || 0) / total) * 100 : 0;
+  const chargedbackPercent = total > 0 ? ((data.sumChargeback || 0) / total) * 100 : 0;
 
   return (
     <View style={styles.card}>
@@ -35,11 +32,11 @@ const RefundsCard: React.FC<RefundsCardProps> = ({ data }) => {
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.dot, { backgroundColor: colors.info }]} />
-          <Text style={styles.legendText}>Cashback: {formatCurrency(data.sumChargedback || 0)}</Text>
+          <Text style={styles.legendText}>Chargeback: {formatCurrency(data.sumChargeback || 0)}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.dot, { backgroundColor: colors.success }]} />
-          <Text style={styles.legendText}>Taxa de Estorno: {(data.taxaEstorno || 0).toFixed(2)}%</Text>
+          <Text style={styles.legendText}>Total de Reembolsos: {formatCurrency(total)}</Text>
         </View>
       </View>
     </View>

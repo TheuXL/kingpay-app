@@ -14,6 +14,13 @@ import type { ApiResponse } from '../../types/api';
 
 export type { ApiResponse };
 
+// Função para obter o access_token do contexto
+let getAccessToken: (() => string | null) | null = null;
+
+export const setAccessTokenGetter = (getter: () => string | null) => {
+  getAccessToken = getter;
+};
+
 export class EdgeFunctionsProxy {
 
   constructor() {
@@ -30,11 +37,21 @@ export class EdgeFunctionsProxy {
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     try {
-      // Obter sessão ativa
-      const { data: { session } } = await supabase.auth.getSession();
+      // Obter access_token do contexto de autenticação
+      let accessToken: string | null = null;
+      
+      if (getAccessToken) {
+        accessToken = getAccessToken();
+      } else {
+        // Fallback para sessão do Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        accessToken = session?.access_token || null;
+      }
 
-      // Construir URL completa
-      let url = `${ENV.SUPABASE_URL}/functions/v1/${endpoint}`;
+      // Construir URL base correta
+      const isAuthEndpoint = endpoint.startsWith('token');
+      const baseUrl = isAuthEndpoint ? `${ENV.SUPABASE_URL}/auth/v1/` : `${ENV.SUPABASE_URL}/functions/v1/`;
+      let url = `${baseUrl}${endpoint}`;
       
       // Adicionar query parameters para GET
       if (params && Object.keys(params).length > 0 && method === 'GET') {
@@ -49,8 +66,11 @@ export class EdgeFunctionsProxy {
       };
 
       // Adicionar Authorization se autenticado
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+        console.log('🔑 Usando access_token para autenticação');
+      } else {
+        console.log('⚠️ Nenhum access_token disponível');
       }
 
       // Configurar requisição
@@ -67,7 +87,13 @@ export class EdgeFunctionsProxy {
         requestOptions.body = JSON.stringify(body);
       }
 
-      console.log(`🌐 Edge Function: ${method} ${endpoint}`);
+      console.log(`\n\n--- 🚀 [API Request] 🚀 ---`);
+      console.log(`[${method}] ${url}`);
+      if (body && method !== 'GET') {
+        console.log(`[Payload]:`, JSON.stringify(body, null, 2));
+      }
+      console.log(`[Auth]: ${accessToken ? 'Bearer Token' : 'No Auth'}`);
+      console.log(`-------------------------\n`);
 
       // Fazer requisição
       const response = await fetch(url, requestOptions);
@@ -75,8 +101,17 @@ export class EdgeFunctionsProxy {
       // Verificar resposta
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`❌ Edge Function error: ${response.status} ${errorText}`);
         
+        console.log(`\n\n--- ❌ [API Error] ❌ ---`);
+        console.log(`[${method}] ${url} - Status: ${response.status}`);
+        try {
+          // Tenta formatar o erro como JSON para melhor leitura
+          console.log(`[Error Body]:`, JSON.stringify(JSON.parse(errorText), null, 2));
+        } catch {
+          console.log(`[Error Body]:`, errorText);
+        }
+        console.log(`-----------------------\n`);
+
         return {
           success: false,
           error: `HTTP ${response.status}: ${errorText || response.statusText}`,
@@ -95,7 +130,10 @@ export class EdgeFunctionsProxy {
         data = textData ? { message: textData } : {};
       }
 
-      console.log(`✅ Edge Function success: ${method} ${endpoint}`);
+      console.log(`\n\n--- ✅ [API Response] ✅ ---`);
+      console.log(`[${method}] ${url} - Status: ${response.status}`);
+      console.log(`[Data]:`, JSON.stringify(data, null, 2));
+      console.log(`--------------------------\n`);
 
       return {
         success: true,
@@ -104,7 +142,11 @@ export class EdgeFunctionsProxy {
       };
 
     } catch (error) {
-      console.error(`❌ Edge Function error ${method} ${endpoint}:`, error);
+      const errorText = error instanceof Error ? error.message : 'Erro de conexão';
+      console.log(`\n\n--- ❌ [Network Error] ❌ ---`);
+      console.log(`[${method}] /${endpoint}`);
+      console.log(`[Error]: ${errorText}`);
+      console.log(`---------------------------\n`);
       
       return {
         success: false,

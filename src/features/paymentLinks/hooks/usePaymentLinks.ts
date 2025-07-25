@@ -1,41 +1,65 @@
-import { getPaymentLinks } from '@/features/paymentLinks/services/paymentLinkService';
 import { useCallback, useEffect, useState } from 'react';
+import { PaymentLink, getPaymentLinks } from '../services/paymentLinkService';
 
 export const usePaymentLinks = () => {
-  const [paymentLinks, setPaymentLinks] = useState<any[]>([]);
+  const [links, setLinks] = useState<PaymentLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchLinks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const linksData = await getPaymentLinks();
-      
-      let parsedData = [];
-      if (linksData?.data) {
-          parsedData = typeof linksData.data === 'string' 
-              ? JSON.parse(linksData.data) 
-              : linksData.data;
+      const response = await getPaymentLinks();
+      if (response.success && response.data) {
+        // A API retorna { data: [...] }
+        setLinks(Array.isArray(response.data.data) ? response.data.data : []);
+      } else {
+        setError(response.error || 'Erro ao buscar links de pagamento.');
       }
-      setPaymentLinks(Array.isArray(parsedData) ? parsedData : []);
-
     } catch (err: any) {
-      console.error("Erro detalhado no usePaymentLinks:", err);
-      setError(err.message || 'Ocorreu um erro ao buscar os links de pagamento.');
+      console.error('Falha ao buscar links de pagamento:', err);
+      setError(err.message || 'Ocorreu um erro ao carregar os links.');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchLinks();
+  }, [fetchLinks]);
 
   return {
-    paymentLinks,
+    links,
     isLoading,
     error,
-    refetch: fetchData,
+    refetch: fetchLinks,
   };
-}; 
+};
+
+export const usePaymentLinkDetail = (id: string) => {
+    const [link, setLink] = useState<PaymentLink | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchLink = useCallback(async () => {
+        if (!id) return;
+        try {
+            setIsLoading(true);
+            setError(null);
+            const data = await getPaymentLinkById(id);
+            setLink(data);
+        } catch (err: any) {
+            setError(err.message || 'Ocorreu um erro ao buscar o detalhe do link.');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        fetchLink();
+    }, [fetchLink]);
+
+    return { link, isLoading, error, refetch: fetchLink };
+} 

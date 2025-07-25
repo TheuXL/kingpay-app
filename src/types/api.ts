@@ -1,8 +1,8 @@
 // =================== TIPOS GERAIS ===================
 export interface ApiResponse<T = any> {
   success: boolean;
-  data?: T;
-  error?: string;
+  data?: T | null;
+  error?: string | null;
   message?: string;
   status?: number;
 }

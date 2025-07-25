@@ -1,15 +1,27 @@
+import { formatCurrency } from '@/utils/currency';
 import { ChevronDown, TrendingDown, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../../theme/colors';
 
-const TotalSalesCard = () => {
-  // Dados de exemplo para o design
-  const data = {
-    total: 'R$ 233.179,07',
-    salesCount: { value: '1.456', change: '+14%', isPositive: true },
-    averageTicket: { value: 'R$ 45,96', change: '+4%', isPositive: false }, // Variação negativa como exemplo
+interface TotalSalesCardProps {
+  data: {
+    sumPaid: number;
+    countPaid: number;
+    avgTicket: number;
+    // outras props se houver
   };
+}
+
+const TotalSalesCard: React.FC<TotalSalesCardProps> = ({ data }) => {
+  // Fallback para caso os dados não cheguem
+  const totalSales = data?.sumPaid || 0;
+  const salesCount = data?.countPaid || 0;
+  const averageTicket = data?.avgTicket || 0;
+
+  // Lógica de variação (exemplo, precisa ser implementada com dados reais de comparação)
+  const salesCountChange = { value: '+14%', isPositive: true };
+  const averageTicketChange = { value: '+4%', isPositive: true };
 
   return (
     <View style={styles.card}>
@@ -20,31 +32,31 @@ const TotalSalesCard = () => {
           <ChevronDown color="#3F3F46" size={16} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.totalValue}>{data.total}</Text>
+      <Text style={styles.totalValue}>{formatCurrency(totalSales)}</Text>
 
       {/* Métricas */}
       <View style={styles.metricsContainer}>
         <View style={styles.metricItem}>
           <Text style={styles.metricLabel}>Número de vendas</Text>
           <View style={styles.metricValueContainer}>
-            <Text style={styles.metricValue}>{data.salesCount.value}</Text>
+            <Text style={styles.metricValue}>{salesCount.toLocaleString('pt-BR')}</Text>
             <View style={styles.trendContainer}>
-              <TrendingUp size={14} color={colors.success} />
-              <Text style={[styles.trendText, { color: colors.success }]}>
-                {data.salesCount.change}
-              </Text>
+                {salesCountChange.isPositive ? <TrendingUp size={14} color={colors.success} /> : <TrendingDown size={14} color={colors.danger} />}
+                <Text style={[styles.trendText, { color: salesCountChange.isPositive ? colors.success : colors.danger }]}>
+                    {salesCountChange.value}
+                </Text>
             </View>
           </View>
         </View>
         <View style={styles.metricItem}>
           <Text style={styles.metricLabel}>Ticket Médio</Text>
           <View style={styles.metricValueContainer}>
-            <Text style={styles.metricValue}>{data.averageTicket.value}</Text>
+            <Text style={styles.metricValue}>{formatCurrency(averageTicket)}</Text>
             <View style={styles.trendContainer}>
-              <TrendingDown size={14} color={colors.danger} />
-              <Text style={[styles.trendText, { color: colors.danger }]}>
-                {data.averageTicket.change}
-              </Text>
+                {averageTicketChange.isPositive ? <TrendingUp size={14} color={colors.success} /> : <TrendingDown size={14} color={colors.danger} />}
+                <Text style={[styles.trendText, { color: averageTicketChange.isPositive ? colors.success : colors.danger }]}>
+                    {averageTicketChange.value}
+                </Text>
             </View>
           </View>
         </View>

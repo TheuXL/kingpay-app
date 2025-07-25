@@ -1,7 +1,8 @@
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/config/supabaseClient';
 
 /**
- * Módulo: Rastreamento (UTM)
+ * Módulo: Rastreamento
+ * Endpoint para registrar eventos de rastreamento (pixels, UTMs).
  */
 export class TrackingService {
 

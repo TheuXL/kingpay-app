@@ -1,18 +1,40 @@
+import { formatCurrency, formatPercentage } from '@/utils/formatters';
 import { ChevronDown, TrendingDown, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../../theme/colors';
 
-const PaymentMethodsCard = () => {
-  // Dados de exemplo para o design
-  const data = {
-    total: 'R$ 233.179,07',
-    methods: [
-      { name: 'Pix', percentage: '70,8%', change: '+14%', isPositive: true, color: colors.chartBlue },
-      { name: 'Cartão', percentage: '19,4%', change: '-10%', isPositive: false, color: colors.chartPurple },
-      { name: 'Boleto', percentage: '9,8%', change: '-2%', isPositive: false, color: colors.chartGreen },
-    ],
+interface PaymentMethod {
+  metodo: string;
+  valorTotal: number;
+}
+
+interface PaymentMethodsCardProps {
+  data: PaymentMethod[];
+}
+
+const methodColors: { [key: string]: string } = {
+    PIX: colors.chartBlue,
+    CARD: colors.chartPurple,
+    BOLETO: colors.chartGreen,
   };
+
+const PaymentMethodsCard: React.FC<PaymentMethodsCardProps> = ({ data }) => {
+
+  const total = data?.reduce((sum, item) => sum + item.valorTotal, 0) || 0;
+
+  const methods = (data || []).map(method => {
+      const percentage = total > 0 ? (method.valorTotal / total) : 0;
+      return {
+          name: method.metodo,
+          percentage: formatPercentage(percentage),
+          percentageValue: percentage * 100,
+          color: methodColors[method.metodo] || colors.textSecondary,
+          // Dados de variação precisam vir da API
+          change: '+0%', 
+          isPositive: true,
+      }
+  });
 
   return (
     <View style={styles.card}>
@@ -23,18 +45,18 @@ const PaymentMethodsCard = () => {
           <ChevronDown color="#3F3F46" size={16} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.totalValue}>{data.total}</Text>
+      <Text style={styles.totalValue}>{formatCurrency(total)}</Text>
       
       {/* Barra de Progresso */}
       <View style={styles.progressBarContainer}>
-        <View style={[styles.progressSegment, { width: '70.8%', backgroundColor: colors.chartBlue }]} />
-        <View style={[styles.progressSegment, { width: '19.4%', backgroundColor: colors.chartPurple }]} />
-        <View style={[styles.progressSegment, { width: '9.8%', backgroundColor: colors.chartGreen }]} />
+        {methods.map((method, index) => (
+             <View key={index} style={[styles.progressSegment, { width: `${method.percentageValue}%`, backgroundColor: method.color }]} />
+        ))}
       </View>
 
       {/* Legenda */}
       <View style={styles.legendContainer}>
-        {data.methods.map((method, index) => (
+        {methods.map((method, index) => (
           <View key={index} style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: method.color }]} />
             <Text style={styles.legendLabel}>{method.name}</Text>
@@ -107,11 +129,11 @@ const styles = StyleSheet.create({
       },
     legendContainer: {
       marginTop: 20,
+      gap: 12,
     },
     legendItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 12,
     },
     legendDot: {
       width: 8,
@@ -123,6 +145,7 @@ const styles = StyleSheet.create({
       flex: 1,
       fontSize: 14,
       color: '#52525B',
+      textTransform: 'capitalize',
     },
     legendPercentage: {
         fontSize: 14,

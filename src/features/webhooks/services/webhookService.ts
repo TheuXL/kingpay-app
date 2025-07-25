@@ -1,7 +1,8 @@
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/config/supabaseClient';
 
 /**
- * Módulo: Webhooks (Configuração)
+ * Módulo: Webhooks
+ * Endpoints para gerenciar webhooks da empresa.
  */
 export class WebhookService {
 

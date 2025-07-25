@@ -28,8 +28,8 @@ const QuickActions: React.FC = () => {
   return (
     <View style={styles.container}>
       <ActionButton icon={Wallet2} label="Carteira" route="/carteira" />
-      <ActionButton icon={ArrowRightLeft} label="Transações" route="/transactions" />
-      <ActionButton icon={Link} label="Link de Pag." route="/payment-links" />
+      <ActionButton icon={ArrowRightLeft} label="Transações" route="/carteira" />
+      <ActionButton icon={Link} label="Link de Pag." route="/links" />
     </View>
   );
 };

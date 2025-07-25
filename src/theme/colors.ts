@@ -1,27 +1,19 @@
 export const colors = {
-  primary: '#1A1AFF', // Azul principal
-  primaryLight: '#3B3BFF', // Azul claro
-  
-  background: '#F5F5F5', // Cinza claro de fundo
-  card: '#FFFFFF', // Branco para os cards
-  border: '#E0E0E0', // Cinza claro para bordas
-
-  textPrimary: '#000000', // Preto para títulos
-  textSecondary: '#555555', // Cinza escuro para textos secundários
-
-  success: '#00C853', // Verde
-  danger: '#FF4D4F', // Vermelho
-  warning: '#FF8C42', // Laranja
-  
-  purple: '#8E24AA', // Roxo
-
-  // Cores para gráficos e elementos específicos
-  chartBlue: '#1A1AFF',
-  chartOrange: '#FF8C42',
-  chartRed: '#FF4D4F',
-  chartPurple: '#8E24AA',
-  chartGreen: '#00C853',
-
-  white: '#FFFFFF',
+  primary: '#2563eb', // Um azul vibrante
+  primaryLight: '#dbeafe',
+  background: '#f8fafc',
+  card: '#ffffff',
+  border: '#e2e8f0',
+  textPrimary: '#1e293b',
+  textSecondary: '#64748b',
+  success: '#22c55e',
+  danger: '#ef4444',
+  warning: '#f97316',
+  purple: '#8b5cf6',
+  orange: '#f97316',
+  green: '#22c55e',
   black: '#000000',
+  white: '#ffffff',
+  info: '#3b82f6',    // Adicionado
+  gray: '#64748b',    // Adicionado
 }; 

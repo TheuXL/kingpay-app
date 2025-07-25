@@ -1,115 +1,115 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '@/theme/colors';
-import { Link, ChevronRight, Copy } from 'lucide-react-native';
+import { formatCurrency } from '@/utils/formatters';
+import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 
-interface PaymentLinkItemProps {
-  name: string;
-  value: string;
-  active: boolean;
-  onPress: () => void;
-  onCopy: () => void;
+const PaymentMethodIcon = ({ method }) => {
+    const icons = {
+        pix: 'aperture',
+        cartao: 'credit-card',
+        boleto: 'file-text'
+    };
+    return <Feather name={icons[method] || 'dollar-sign'} size={16} color={colors.textSecondary} style={styles.methodIcon} />;
 }
 
-const PaymentLinkItem: React.FC<PaymentLinkItemProps> = ({ name, value, active, onPress, onCopy }) => {
+export const PaymentLinkItem = ({ item, onCopy, onToggle, onEdit }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <View style={styles.iconContainer}>
-        <Link color={colors.primary} size={24} />
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.name}>{item.nome}</Text>
+        <Text style={styles.value}>{formatCurrency(item.valor)}</Text>
       </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.value}>{value}</Text>
-      </View>
-      <View style={styles.actionsContainer}>
-        <View style={[styles.badge, active ? styles.activeBadge : styles.inactiveBadge]}>
-          <Text style={[styles.badgeText, active ? styles.activeBadgeText : styles.inactiveBadgeText]}>
-            {active ? 'Ativo' : 'Inativo'}
-          </Text>
+      <View style={styles.details}>
+        <View style={styles.methods}>
+            {item.formas_de_pagamento.map(method => <PaymentMethodIcon key={method} method={method} />)}
         </View>
-        <TouchableOpacity style={styles.copyButton} onPress={onCopy}>
-          <Copy size={16} color={colors.primary} />
-          <Text style={styles.copyButtonText}>Copiar link</Text>
+        <View style={styles.status}>
+            <Text style={item.ativo ? styles.active : styles.inactive}>{item.ativo ? 'Ativo' : 'Inativo'}</Text>
+            <Switch
+                value={item.ativo}
+                onValueChange={onToggle}
+                trackColor={{ false: '#767577', true: colors.primary }}
+                thumbColor={'#f4f3f4'}
+            />
+        </View>
+      </View>
+      <View style={styles.actions}>
+        <TouchableOpacity style={styles.actionButton} onPress={onCopy}>
+            <Feather name="copy" size={18} color={colors.primary} />
+            <Text style={styles.actionText}>Copiar Link</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={onEdit}>
+            <Feather name="edit" size={18} color={colors.textSecondary} />
+            <Text style={styles.actionText}>Editar</Text>
         </TouchableOpacity>
       </View>
-      <ChevronRight color={colors.gray} size={24} />
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  iconContainer: {
-    backgroundColor: '#E6F0FF',
-    borderRadius: 50,
-    padding: 12,
-    marginRight: 16,
-  },
-  infoContainer: {
-    flex: 1,
-    gap: 4,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-  },
-  value: {
-    fontSize: 14,
-    color: '#52525B',
-  },
-  actionsContainer: {
-    alignItems: 'flex-end',
-    gap: 8,
-    marginRight: 12,
-  },
-  badge: {
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-  },
-  activeBadge: {
-    backgroundColor: '#E6F9F0',
-  },
-  inactiveBadge: {
-    backgroundColor: '#FDECEC',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  activeBadgeText: {
-    color: '#00875F',
-  },
-  inactiveBadgeText: {
-    color: '#F75A68',
-  },
-  copyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E6F0FF',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 6,
-  },
-  copyButtonText: {
-    color: colors.primary,
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-});
-
-export default PaymentLinkItem; 
+    card: {
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+    },
+    name: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: colors.textPrimary,
+    },
+    value: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: colors.primary,
+    },
+    details: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    methods: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    methodIcon: {
+        // ...
+    },
+    status: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    active: {
+        color: colors.success,
+        fontWeight: '600'
+    },
+    inactive: {
+        color: colors.textSecondary,
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: 20,
+        borderTopWidth: 1,
+        borderTopColor: colors.background,
+        paddingTop: 12,
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    actionText: {
+        fontSize: 14,
+        color: colors.textSecondary,
+    }
+}); 

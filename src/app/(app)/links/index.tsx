@@ -1,27 +1,63 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { PaymentLinkItem } from '@/components/links/PaymentLinkItem';
+import { usePaymentLinks } from '@/features/paymentLinks/hooks/usePaymentLinks';
 import { colors } from '@/theme/colors';
-import { ChevronRight, Plus, Search, Filter } from 'lucide-react-native';
-import PaymentLinkItem from '@/components/links/PaymentLinkItem';
-
-const linksData = [
-  { id: '1', name: 'Capa Notebook', value: 'R$ 245,45', active: true },
-  { id: '2', name: 'Capa Notebook', value: 'R$ 245,50', active: false },
-  { id: '3', name: 'Mouse Sem Fio', value: 'R$ 89,90', active: true },
-];
+import { useRouter } from 'expo-router';
+import { ChevronRight, Filter, Plus, Search } from 'lucide-react-native';
+import React from 'react';
+import { ActivityIndicator, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function PaymentLinksScreen() {
   const router = useRouter();
+  const { links, isLoading, error, refetch } = usePaymentLinks();
 
-  const handleCopyLink = (link: string) => {
+  const handleCopyLink = (linkId: string) => {
     // Lógica para copiar o link
-    console.log('Copied:', link);
+    console.log('Copied link ID:', linkId);
+  };
+  
+  const handleToggleStatus = (linkId: string, currentStatus: boolean) => {
+    // Lógica para ativar/desativar o link
+    console.log('Toggling status for link ID:', linkId, 'from', currentStatus);
+  };
+  
+  const handleEdit = (linkId: string) => {
+    router.push(`/links/${linkId}`);
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />;
+    }
+
+    if (error) {
+      return <Text style={styles.errorText}>{error}</Text>;
+    }
+
+    if (links.length === 0) {
+        return <Text style={styles.emptyText}>Nenhum link de pagamento encontrado.</Text>
+    }
+
+    return (
+      <View style={styles.linksList}>
+        {links.map((link) => (
+          <PaymentLinkItem
+            key={link.id}
+            item={link}
+            onCopy={() => handleCopyLink(link.id)}
+            onToggle={(newStatus) => handleToggleStatus(link.id, !newStatus)}
+            onEdit={() => handleEdit(link.id)}
+          />
+        ))}
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+      >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Links criados</Text>
           <TouchableOpacity onPress={() => console.log('Ver tudo')}>
@@ -50,19 +86,8 @@ export default function PaymentLinksScreen() {
             <Filter size={20} color={colors.primary} />
           </TouchableOpacity>
         </View>
-
-        <View style={styles.linksList}>
-          {linksData.map((link) => (
-            <PaymentLinkItem
-              key={link.id}
-              name={link.name}
-              value={link.value}
-              active={link.active}
-              onPress={() => router.push(`/links/${link.id}`)}
-              onCopy={() => handleCopyLink(`https://app.kingpaybr.com/pay/${link.id}`)}
-            />
-          ))}
-        </View>
+        
+        {renderContent()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -144,5 +169,17 @@ const styles = StyleSheet.create({
     },
     linksList: {
         marginTop: 8,
+    },
+    errorText: {
+        textAlign: 'center',
+        color: colors.danger,
+        marginTop: 20,
+        fontSize: 16,
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: colors.textSecondary,
+        marginTop: 40,
+        fontSize: 16,
     }
 });

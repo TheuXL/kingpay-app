@@ -1,7 +1,8 @@
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/config/supabaseClient';
 
 /**
  * Módulo: Análise de Risco
+ * Endpoint para avaliar o risco de uma transação ou saque.
  */
 export class RiskService {
 

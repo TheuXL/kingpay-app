@@ -1,34 +1,38 @@
 /**
  * Módulo: Links de Pagamento
+ * Endpoints para criar e gerenciar links de pagamento.
  */
-import { supabase } from '@/lib/supabase';
-import { getAuthHeaders } from '@/utils/auth';
+import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
 
-// Endpoint: /link-pagamentos (Listar)
-export const getPaymentLinks = async () => {
-    const headers = await getAuthHeaders();
-    const { data, error } = await supabase.functions.invoke('link-pagamentos', {
-        method: 'GET',
-        headers
-    });
-    if (error) {
-        console.error('Erro ao invocar a Edge Function: link-pagamentos', 'Detalhes:', error);
-        throw error;
-    }
-    return data;
-};
+export interface PaymentLink {
+    id: string;
+    nome: string;
+    formas_de_pagamento: string[];
+    valor: number;
+    ativo: boolean;
+    created_at: string; // Adicionado
+    descricao?: string; // Adicionado como opcional
+    // ... outros campos
+}
 
-// Endpoint: /link-pagamentos (Criar)
-export const createPaymentLink = async (linkData: any) => {
-    const headers = await getAuthHeaders();
-    const { data, error } = await supabase.functions.invoke('link-pagamentos', {
-        method: 'POST',
-        headers,
-        body: linkData,
-    });
-    if (error) {
-        console.error('Erro ao invocar a Edge Function: link-pagamentos (POST)', 'Detalhes:', error);
-        throw error;
+export interface CreatePaymentLinkRequest {
+    nome: string;
+    valor: number;
+    formas_de_pagamento: ('pix' | 'cartao' | 'boleto')[];
+    descricao?: string; // Adicionado como opcional
+    // ... outros campos
+}
+
+export class PaymentLinkService {
+    async getPaymentLinks() {
+        return edgeFunctionsProxy.get<PaymentLink[]>('link-pagamentos');
     }
-    return data;
-};
+
+    async getPaymentLinkById(id: string) {
+        return edgeFunctionsProxy.get<PaymentLink>(`link-pagamentos?id=${id}`);
+    }
+
+    async createPaymentLink(payload: CreatePaymentLinkRequest) {
+        return edgeFunctionsProxy.post<PaymentLink>('link-pagamentos', payload);
+    }
+}

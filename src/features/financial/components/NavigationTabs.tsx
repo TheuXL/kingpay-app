@@ -1,12 +1,13 @@
+import { colors } from '@/theme/colors';
+import { FileText, Key, Package, Send } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FileText, Package, Send } from 'lucide-react-native';
-import { colors } from '@/theme/colors';
 
 const TABS = [
   { id: 'extrato', label: 'Extrato', icon: <FileText size={18} /> },
   { id: 'antecipacoes', label: 'Antecipações', icon: <Package size={18} /> },
   { id: 'transferencias', label: 'Transferências', icon: <Send size={18} /> },
+  { id: 'chaves_pix', label: 'Chaves Pix', icon: <Key size={18} /> },
 ];
 
 interface NavigationTabsProps {

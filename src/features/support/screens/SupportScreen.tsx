@@ -9,44 +9,47 @@
  * - Status dos tickets
  */
 
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../../contexts/AppContext';
-import { SupportTicket, supportTicketService } from '../services/supportTicketService';
+import { Ticket, supportTicketService } from '../services/supportTicketService';
 
 export default function SupportScreen() {
   const router = useRouter();
   const { user } = useAuth();
   
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadTickets = async () => {
+    setLoading(true);
     try {
       setError(null);
       console.log('🔄 Carregando tickets...');
       
-      const result = await supportTicketService.listTickets();
+      const response = await supportTicketService.listTickets();
       
-      if (result && Array.isArray(result.data)) {
-        setTickets(result.data);
-        console.log(`✅ ${result.data.length} tickets carregados`);
+      if (response.success) {
+        setTickets(response.data?.tickets || []);
+        console.log(`✅ ${response.data?.tickets?.length || 0} tickets carregados`);
       } else {
         setError('Erro ao carregar tickets');
-        console.error('❌ Erro ao carregar tickets: Formato de dados inesperado', result);
+        console.error('❌ Erro ao carregar tickets: Formato de dados inesperado', response);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -108,51 +111,32 @@ export default function SupportScreen() {
     router.push('/(app)/support/create');
   };
 
-  const handleTicketPress = (ticket: SupportTicket) => {
+  const handleTicketPress = (ticket: Ticket) => {
     router.push(`/(app)/support/${ticket.id}`);
   };
 
-  const renderTicket = ({ item }: { item: SupportTicket }) => (
+  const renderTicket = ({ item }: { item: Ticket }) => (
     <TouchableOpacity 
       style={styles.ticketCard}
       onPress={() => handleTicketPress(item)}
     >
       <View style={styles.ticketHeader}>
-        <View style={styles.ticketInfo}>
-          <Text style={styles.ticketSubject} numberOfLines={2}>
-            {item.subject}
-          </Text>
-          <Text style={styles.ticketDate}>
-            {formatDate(item.createdAt.toString())}
-          </Text>
+        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
         </View>
-        
-        <View style={styles.ticketStatus}>
-          <View 
-            style={[
-              styles.statusBadge, 
-              { backgroundColor: getStatusColor(item.status) }
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {getStatusText(item.status)}
-            </Text>
-          </View>
-          
-          {item.unreadMessages && item.unreadMessages > 0 && (
-            <View style={styles.unreadIndicator}>
-              <MaterialCommunityIcons name="circle" size={8} color="#EF4444" />
-            </View>
-          )}
-        </View>
+        <Text style={styles.ticketId}>#{item.id.slice(-6)}</Text>
       </View>
-
-      <View style={styles.ticketFooter}>
-        <MaterialCommunityIcons name="chat-outline" size={16} color="#666" />
-        <Text style={styles.lastMessageText}>
-          Última mensagem: {formatDate(item.updatedAt.toString())}
+      <View style={styles.ticketContent}>
+        <Text style={styles.ticketSubject} numberOfLines={2}>
+            {item.subject}
         </Text>
-        <MaterialCommunityIcons name="chevron-right" size={20} color="#666" />
+        <Text style={styles.ticketDate}>
+            Aberto em: {format(new Date(item.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+        </Text>
+      </View>
+      <View style={styles.ticketFooter}>
+        <Text style={styles.footerText}>Ver detalhes</Text>
+        <Ionicons name="chevron-forward" size={16} color="#4CAF50" />
       </View>
     </TouchableOpacity>
   );
@@ -301,7 +285,7 @@ const styles = StyleSheet.create({
   ticketHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
   ticketInfo: {
@@ -426,5 +410,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+  },
+  ticketId: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginLeft: 10,
+  },
+  ticketContent: {
+    marginBottom: 12,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#0052cc',
+    fontWeight: '600',
   },
 });

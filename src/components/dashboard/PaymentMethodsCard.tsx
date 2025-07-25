@@ -1,16 +1,11 @@
 import { colors } from '@/theme/colors';
+import type { PaymentMethodInfo } from '@/types/dashboard';
 import { formatCurrency } from '@/utils/formatters';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-interface PaymentMethod {
-  metodo: string;
-  vendas: number;
-  valorTotal: number;
-}
-
 interface PaymentMethodsCardProps {
-  data: PaymentMethod[] | null;
+  data: PaymentMethodInfo[] | null;
 }
 
 const PaymentMethodsCard: React.FC<PaymentMethodsCardProps> = ({ data }) => {

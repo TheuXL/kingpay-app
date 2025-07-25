@@ -1,25 +1,20 @@
 import { formatCurrency } from '@/utils/formatters';
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
+import { FinancialSummary } from '../hooks/useWalletData';
 import BalanceCard from './BalanceCard';
-
-// A interface deve corresponder à estrutura de dados do hook
-interface FinancialSummary {
-  total_balances: {
-    total_balance: number;
-    total_balance_card: number;
-    total_financial_reserve: number;
-  };
-  pending_withdrawals: {
-    total_pending_withdrawals: number;
-  };
-}
 
 interface BalanceCarouselProps {
     summary: FinancialSummary | null;
 }
 
-const BalanceCarousel = () => {
+const BalanceCarousel: React.FC<BalanceCarouselProps> = ({ summary }) => {
+  // Dados com fallback para 0 se o summary for nulo
+  const pixBalance = summary?.balance || 0;
+  const cardBalance = summary?.balance_card || 0;
+  const receivableBalance = summary?.a_receber || 0;
+  const reserveBalance = summary?.reserva || 0;
+
   return (
     <ScrollView
       horizontal
@@ -29,25 +24,25 @@ const BalanceCarousel = () => {
       <BalanceCard
         type="pix"
         title="Saldo disponível (Pix)"
-        value={formatCurrency(0)}
+        value={formatCurrency(pixBalance)}
         actionText="Solicitar saque"
       />
       <BalanceCard
         type="card"
         title="Saldo disponível (Cartão)"
-        value={formatCurrency(0)}
+        value={formatCurrency(cardBalance)}
         actionText="Solicitar saque"
       />
       <BalanceCard
         type="receber"
         title="A receber"
-        value={formatCurrency(0)}
-        actionText="Solicitar saque"
+        value={formatCurrency(receivableBalance)}
+        actionText="Solicitar antecipação"
       />
       <BalanceCard
         type="reserva"
         title="Reserva Financeira"
-        value={formatCurrency(0)}
+        value={formatCurrency(reserveBalance)}
         description="Valor retido para garantir a segurança de suas transações."
       />
     </ScrollView>

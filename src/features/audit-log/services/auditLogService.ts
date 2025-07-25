@@ -1,37 +1,25 @@
-import { supabase } from '../../../lib/supabase';
-
 /**
- * Módulo: Logs de Auditoria (Admin)
+ * Módulo: Logs de Auditoria
+ * Endpoints para consulta de logs de atividades.
  */
-export class AuditLogService {
+import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
 
-  /**
-   * GET /functions/v1/audit-log
-   * Propósito: Recuperar um registro de ações importantes realizadas no sistema.
-   */
-  async getAuditLogs(filters?: { 
-    limit?: number; 
-    offset?: number; 
-    userId?: string;
-    action?: string;
-  }) {
-    try {
-      const params = new URLSearchParams();
-      if (filters?.limit) params.append('limit', filters.limit.toString());
-      if (filters?.offset) params.append('offset', filters.offset.toString());
-      if (filters?.userId) params.append('user_id', filters.userId);
-      if (filters?.action) params.append('action', filters.action);
-
-      const { data, error } = await supabase.functions.invoke(`audit-log?${params.toString()}`, {
-        method: 'GET',
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar logs de auditoria:', error);
-      throw error;
-    }
-  }
+export interface AuditLog {
+    id: string;
+    created_at: string;
+    actor: string; // email do usuário
+    action: string;
+    details: Record<string, any>;
 }
 
-export const auditLogService = new AuditLogService(); 
+/**
+ * Busca os logs de auditoria com paginação.
+ * Endpoint: GET /audit-log
+ */
+export const getAuditLogs = async (params?: { limit?: number; offset?: number }) => {
+    const queryParams: Record<string, string> = {};
+    if (params?.limit) queryParams['limit'] = String(params.limit);
+    if (params?.offset) queryParams['offset'] = String(params.offset);
+    
+    return edgeFunctionsProxy.get<{ data: AuditLog[], pagination: any }>('audit-log', queryParams);
+}; 

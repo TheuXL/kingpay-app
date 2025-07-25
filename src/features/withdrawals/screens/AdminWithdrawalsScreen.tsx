@@ -11,7 +11,7 @@
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -25,21 +25,24 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext'; // Restaurado
 import { formatCurrency } from '../../../utils/currency';
-import { showToast } from '../../../utils/toast'; // Caminho relativo corrigido
-import { getWithdrawals } from '../../admin/services/adminService'; // Corrigido
-import { updateWithdrawalStatus } from '../services/withdrawalService'; // Corrigido
+import { showToast } from '../../../utils/toast';
+import { useWithdrawals } from '../hooks/useWithdrawals';
+import { updateWithdrawalStatus } from '../services/withdrawalService';
 
+// A interface pode ser movida para um arquivo de tipos se necessário
 interface WithdrawalAdmin {
   id: string;
-  user_id: string;
-  requested_amount: number;
+  createdat: string;
+  updatedat?: string;
+  status: 'done' | 'pending' | 'failed' | 'cancelled' | 'approved';
+  type: string;
+  amount: number;
+  company_name?: string;
+  company_taxid?: string;
+  // Campos que podem não estar na interface padrão mas são usados na UI
+  is_pix?: boolean; 
   description?: string;
-  status: 'pending' | 'approved' | 'done' | 'cancelled';
-  is_pix: boolean;
-  created_at: string;
-  updated_at?: string;
   reason_for_denial?: string;
   user_email?: string;
   user_name?: string;
@@ -47,12 +50,10 @@ interface WithdrawalAdmin {
 
 export function AdminWithdrawalsScreen() {
   const router = useRouter();
-  const { user } = useAuth();
   
-  const [withdrawals, setWithdrawals] = useState<WithdrawalAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Usando o hook para gerenciar os dados
+  const { withdrawals, isLoading, error, refetch } = useWithdrawals();
+  
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'cancelled'>('pending');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
@@ -60,61 +61,6 @@ export function AdminWithdrawalsScreen() {
   const [denyModalVisible, setDenyModalVisible] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<WithdrawalAdmin | null>(null);
   const [denyReason, setDenyReason] = useState('');
-
-  const loadWithdrawals = async () => {
-    try {
-      setError(null);
-      setLoading(true); // Inicia o loading aqui
-      console.log('💸 Carregando saques para admin...');
-
-      const response = await getWithdrawals({ 
-        limit: 100, 
-        offset: 0 
-      });
-
-      const { data } = response;
-
-      if (data && data.withdrawals) {
-        // A API já deve retornar os campos corretos, mas mantemos a modelagem para segurança
-        const withdrawalData: WithdrawalAdmin[] = data.withdrawals.map((item: any) => ({
-          id: item.id,
-          user_id: item.user_id || 'unknown',
-          requested_amount: parseFloat(item.requestedamount || item.amount || '0'),
-          description: item.description || 'Saque solicitado',
-          status: item.status || 'pending',
-          is_pix: item.isPix || item.is_pix || false,
-          created_at: item.created_at || new Date().toISOString(),
-          updated_at: item.updated_at,
-          reason_for_denial: item.reason_for_denial,
-          user_email: item.user_email || item.user?.email, // A API pode aninhar os dados do usuário
-          user_name: item.user_name || item.user?.full_name,
-        }));
-
-        setWithdrawals(withdrawalData);
-        console.log(`✅ ${withdrawalData.length} saques carregados para admin`);
-      } else {
-        console.log('⚠️ Nenhum saque encontrado ou resposta inesperada');
-        setWithdrawals([]);
-      }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Erro desconhecido';
-      setError(errorMessage);
-      console.error('❌ Erro ao carregar saques:', errorMessage);
-      showToast(`Erro ao carregar saques: ${errorMessage}`, 'error'); // Adiciona um toast para feedback
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadWithdrawals();
-    setRefreshing(false);
-  };
-
-  useEffect(() => {
-    loadWithdrawals();
-  }, []);
 
   const filteredWithdrawals = withdrawals.filter(withdrawal => {
     if (filter === 'all') return true;
@@ -124,7 +70,7 @@ export function AdminWithdrawalsScreen() {
   const handleApprove = async (withdrawal: WithdrawalAdmin) => {
     Alert.alert(
       'Aprovar Saque',
-      `Tem certeza que deseja aprovar o saque de ${formatCurrency(withdrawal.requested_amount)}?`,
+      `Tem certeza que deseja aprovar o saque de ${formatCurrency(withdrawal.amount)}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -133,14 +79,12 @@ export function AdminWithdrawalsScreen() {
           onPress: async () => {
             try {
               setActionLoading(withdrawal.id);
-              console.log('✅ Aprovando saque:', withdrawal.id);
-
               await updateWithdrawalStatus(
                 withdrawal.id,
                 'approved',
               );
               showToast('Saque aprovado com sucesso!');
-              await loadWithdrawals(); // Recarregar dados
+              await refetch(); // Recarregar dados com o hook
 
             } catch (error: any) {
               console.error('❌ Erro ao aprovar saque:', error);
@@ -168,8 +112,6 @@ export function AdminWithdrawalsScreen() {
 
     try {
       setActionLoading(selectedWithdrawal.id);
-      console.log('❌ Negando saque:', selectedWithdrawal.id, 'Motivo:', denyReason);
-
       await updateWithdrawalStatus(
         selectedWithdrawal.id,
         'cancelled',
@@ -179,7 +121,7 @@ export function AdminWithdrawalsScreen() {
       setDenyModalVisible(false);
       setSelectedWithdrawal(null);
       setDenyReason('');
-      await loadWithdrawals(); // Recarregar dados
+      await refetch(); // Recarregar dados com o hook
 
     } catch (error: any) {
       console.error('❌ Erro ao negar saque:', error);
@@ -188,7 +130,7 @@ export function AdminWithdrawalsScreen() {
       setActionLoading(null);
     }
   };
-
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -224,10 +166,10 @@ export function AdminWithdrawalsScreen() {
       <View style={styles.withdrawalHeader}>
         <View style={styles.withdrawalInfo}>
           <Text style={styles.withdrawalAmount}>
-            {formatCurrency(item.requested_amount)}
+            {formatCurrency(item.amount)}
           </Text>
           <Text style={styles.withdrawalType}>
-            {item.is_pix ? '🔄 PIX' : '🏦 Transferência'}
+            {item.type === 'pix' ? '🔄 PIX' : '🏦 Transferência'}
           </Text>
         </View>
         
@@ -247,14 +189,14 @@ export function AdminWithdrawalsScreen() {
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="account" size={16} color="#666" />
           <Text style={styles.detailText}>
-            {item.user_name || item.user_email || `ID: ${item.user_id}`}
+            {item.company_name || `Tax ID: ${item.company_taxid}`}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
           <MaterialCommunityIcons name="calendar" size={16} color="#666" />
           <Text style={styles.detailText}>
-            {new Date(item.created_at).toLocaleString('pt-BR')}
+            {new Date(item.createdat).toLocaleString('pt-BR')}
           </Text>
         </View>
         
@@ -313,7 +255,7 @@ export function AdminWithdrawalsScreen() {
     </View>
   );
 
-  if (loading) {
+  if (isLoading && withdrawals.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -337,7 +279,7 @@ export function AdminWithdrawalsScreen() {
         <Text style={styles.headerTitle}>Gerenciar Saques</Text>
         <TouchableOpacity 
           style={styles.refreshButton}
-          onPress={onRefresh}
+          onPress={refetch}
         >
           <MaterialCommunityIcons name="refresh" size={24} color="#fff" />
         </TouchableOpacity>
@@ -379,7 +321,7 @@ export function AdminWithdrawalsScreen() {
             <MaterialCommunityIcons name="alert-circle" size={48} color="#EF4444" />
             <Text style={styles.errorTitle}>Erro ao carregar saques</Text>
             <Text style={styles.errorMessage}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={loadWithdrawals}>
+            <TouchableOpacity style={styles.retryButton} onPress={refetch}>
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
@@ -402,8 +344,8 @@ export function AdminWithdrawalsScreen() {
             keyExtractor={(item) => item.id}
             refreshControl={
               <RefreshControl 
-                refreshing={refreshing} 
-                onRefresh={onRefresh}
+                refreshing={isLoading} 
+                onRefresh={refetch}
                 tintColor="#0052cc"
               />
             }
@@ -435,7 +377,7 @@ export function AdminWithdrawalsScreen() {
             {selectedWithdrawal && (
               <View style={styles.modalContent}>
                 <Text style={styles.modalSubtitle}>
-                  Valor: {formatCurrency(selectedWithdrawal.requested_amount)}
+                  Valor: {formatCurrency(selectedWithdrawal.amount)}
                 </Text>
                 
                 <Text style={styles.inputLabel}>

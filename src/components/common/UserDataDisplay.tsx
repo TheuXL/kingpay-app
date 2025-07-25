@@ -3,9 +3,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../contexts/AppContext';
 
 export const UserDataDisplay = () => {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return <Text>Carregando dados do usuário...</Text>;
   }
 
@@ -15,22 +15,14 @@ export const UserDataDisplay = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dados do Usuário</Text>
-      <Text>Email: {user.email}</Text>
-      <Text>ID: {user.id}</Text>
+      <Text style={styles.label}>Usuário:</Text>
+      <Text style={styles.value}>{user.email}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
+  container: { padding: 16 },
+  label: { fontWeight: 'bold', fontSize: 16 },
+  value: { fontSize: 16, color: '#333' },
 }); 

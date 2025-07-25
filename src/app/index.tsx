@@ -7,24 +7,8 @@
  */
 
 import { Redirect } from 'expo-router';
-import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { useAuth } from '../contexts/AppContext';
 
-export default function App() {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (isAuthenticated) {
-    return <Redirect href="/(app)/(tabs)/dashboard" />;
-  } else {
-    return <Redirect href="/(auth)/login" />;
-  }
+export default function Index() {
+  // Redireciona automaticamente para a tela de login
+  return <Redirect href="/login" />;
 } 

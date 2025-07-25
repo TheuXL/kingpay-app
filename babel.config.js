@@ -5,6 +5,15 @@ module.exports = function(api) {
     plugins: [
       '@babel/plugin-transform-export-namespace-from',
       'react-native-reanimated/plugin',
+      [
+        'module-resolver',
+        {
+          alias: {
+            'react-native/Libraries/Components/Touchable/TouchableOpacity':
+              './src/components/common/LoggedTouchableOpacity',
+          },
+        },
+      ],
     ],
   };
 }; 

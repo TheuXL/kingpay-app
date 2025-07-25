@@ -1,22 +1,42 @@
-import React, { useState, useRef } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, NativeSyntheticEvent, NativeScrollEvent, Text } from 'react-native';
-import RefundsCard from './RefundsCard';
-import PaymentMethodsCard from './PaymentMethodsCard';
-import TotalSalesCard from './TotalSalesCard';
+import React, { useState } from 'react';
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, View } from 'react-native';
 import ApprovalRateCard from './ApprovalRateCard';
+import PaymentMethodsCard from './PaymentMethodsCard';
+import RefundsCard from './RefundsCard';
+import TotalSalesCard from './TotalSalesCard';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.9;
 const SPACING = (width - CARD_WIDTH) / 2;
 
-const DashboardCarousel = () => {
+interface DashboardCarouselProps {
+  data: any; // O objeto `additionalInfo` vindo do hook
+}
+
+const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Fallback para caso os dados não cheguem
+  if (!data) {
+    return null; // Ou um loader/skeleton
+  }
+
+  // Extrai os dados necessários para cada card
+  const refundsData = {
+    refunds: data.refunds,
+    chargebacks: data.chargebacks,
+    // ... outros dados de estorno se houver
+  };
+
+  const paymentMethodsData = data.paymentMethods;
+  const totalSalesData = data.totalSales;
+  const approvalRateData = data.approvalRates;
+
   const cards = [
-    <RefundsCard key="refunds" />,
-    <PaymentMethodsCard key="payment" />,
-    <TotalSalesCard key="sales" />,
-    <ApprovalRateCard key="approval" />,
+    <RefundsCard key="refunds" data={refundsData} />,
+    <PaymentMethodsCard key="payment" data={paymentMethodsData} />,
+    <TotalSalesCard key="sales" data={totalSalesData} />,
+    <ApprovalRateCard key="approval" data={approvalRateData} />,
   ];
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {

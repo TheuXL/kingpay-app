@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { withLogging } from "./withLogging";
 
 interface ButtonProps {
   title: string;
@@ -48,6 +49,8 @@ export const Button: React.FC<ButtonProps> = ({
     </TouchableOpacity>
   );
 };
+
+export const LoggedButton = withLogging(Button);
 
 const styles = StyleSheet.create({
   button: {

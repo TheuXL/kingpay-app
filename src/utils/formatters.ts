@@ -1,3 +1,6 @@
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
 /**
  * Formata um objeto Date para o formato YYYY-MM-DD.
  * @param {Date} date - O objeto Date a ser formatado.
@@ -10,6 +13,18 @@ export const formatDateForApi = (date: Date): string => {
     return '';
   }
   return date.toISOString().split('T')[0];
+};
+
+/**
+ * Formata uma data para um formato curto, ex: "23 de Mai".
+ * @param {Date} date - O objeto Date a ser formatado.
+ * @returns {string} A data formatada.
+ */
+export const formatShortDate = (date: Date): string => {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return '';
+  }
+  return format(date, "dd 'de' MMM", { locale: ptBR });
 };
 
 /**
