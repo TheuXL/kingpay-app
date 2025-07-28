@@ -1,6 +1,6 @@
-import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Company, UserProfile, userProfileService } from '../features/authentication/services/userProfileService';
-import { useAuth } from './AppContext';
+import { useAppContext } from './AppContext';
 
 interface UserDataContextType {
   userProfile: UserProfile | null;
@@ -12,12 +12,12 @@ interface UserDataContextType {
 const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
 
 export const UserDataProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user } = useAppContext();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -31,17 +31,17 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]); // Dependência estável
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchUserProfile();
     } else {
       setUserProfile(null);
       setCompany(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id, fetchUserProfile]);
 
   return (
     <UserDataContext.Provider value={{ userProfile, company, loading, fetchUserProfile }}>

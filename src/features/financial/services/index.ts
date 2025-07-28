@@ -1,3 +1,2 @@
-export * from '../types';
-export { WalletService } from './walletService';
+export * from './walletService';
 

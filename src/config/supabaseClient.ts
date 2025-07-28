@@ -74,4 +74,7 @@ AppState.addEventListener('change', (nextAppState) => {
   if (nextAppState === 'active') {
     supabaseClient.auth.getSession();
   }
-}); 
+});
+
+// Export default para compatibilidade
+export default supabaseClient;

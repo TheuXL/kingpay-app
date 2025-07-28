@@ -1,18 +1,32 @@
 import { ChevronDown } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors } from '../../theme/colors';
+import { DimensionValue, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const ApprovalRateCard = () => {
+interface ApprovalRateMethod {
+  name: string;
+  rate: string;
+  width: DimensionValue; // Corrigido para o tipo correto
+  color: string;
+}
+
+interface ApprovalRateCardProps {
+  data: {
+    total: string;
+    methods: ApprovalRateMethod[];
+  } | null;
+}
+
+const ApprovalRateCard: React.FC<ApprovalRateCardProps> = ({ data }) => {
   // Dados de exemplo para o design
-  const data = {
-    total: '92,9%',
-    methods: [
-      { name: 'Pix', rate: '98,6%', width: '98.6%', color: colors.chartBlue },
-      { name: 'Cartão', rate: '76,9%', width: '76.9%', color: colors.chartPurple },
-      { name: 'Boleto', rate: '85,2%', width: '85.2%', color: colors.chartGreen },
-    ],
-  };
+  if (!data) {
+    // Pode mostrar um loader ou um estado vazio
+    return (
+      <View style={styles.card}>
+        <Text style={styles.title}>Taxa de aprovação</Text>
+        <Text>Carregando dados...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>

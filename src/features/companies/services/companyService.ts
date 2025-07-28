@@ -120,63 +120,24 @@ export class CompanyService {
     limit?: number;
     offset?: number;
   }): Promise<{ companies: Company[]; total: number }> {
-    try {
-      console.log('🏢 Listando todas as empresas...');
-
-      const params = new URLSearchParams();
-      if (filters?.status) params.append('status', filters.status);
-      if (filters?.limit) params.append('limit', filters.limit.toString());
-      if (filters?.offset) params.append('offset', filters.offset.toString());
-
-      const { data, error } = await supabase.functions.invoke(`companies?${params.toString()}`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao listar empresas:', error.message);
-        throw error;
-      }
-
-      return {
-        companies: data.companies || [],
-        total: data.total || 0
-      };
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao listar empresas:', error);
-      throw error;
-    }
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    
+    const response = await edgeFunctionsProxy.invoke<{ companies: Company[]; total: number }>(`companies?${params.toString()}`, 'GET');
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao listar empresas.');
   }
 
   /**
    * Endpoint 57: Obter Contagem de Empresas
    * GET /functions/v1/companies/contagem
    */
-  async getCompaniesCount(): Promise<{
-    total: number;
-    pending: number;
-    approved: number;
-    rejected: number;
-    blocked: number;
-  }> {
-    try {
-      console.log('📊 Obtendo contagem de empresas...');
-
-      const { data, error } = await supabase.functions.invoke('companies/contagem', {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao obter contagem:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao obter contagem:', error);
-      throw error;
-    }
+  async getCompaniesCount(): Promise<any> {
+    const response = await edgeFunctionsProxy.invoke<any>('companies/contagem', 'GET');
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao obter contagem de empresas.');
   }
 
   /**
@@ -184,7 +145,7 @@ export class CompanyService {
    * GET /functions/v1/companies/:id
    */
   async getCompanyById(companyId: string): Promise<Company> {
-    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}`);
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}`, 'GET');
     if (response.success && response.data.company) return response.data.company;
     throw new Error(response.error || 'Erro ao buscar empresa.');
   }
@@ -194,26 +155,9 @@ export class CompanyService {
    * POST /functions/v1/companies
    */
   async createCompany(companyData: CreateCompanyRequest): Promise<Company> {
-    try {
-      console.log('➕ Criando nova empresa:', companyData.name);
-
-      const { data, error } = await supabase.functions.invoke('companies', {
-        method: 'POST',
-        body: companyData,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao criar empresa:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Empresa criada:', data.id);
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao criar empresa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<Company>('companies', 'POST', companyData);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao criar empresa.');
   }
 
   /**
@@ -225,26 +169,9 @@ export class CompanyService {
     status: 'approved' | 'rejected' | 'blocked',
     reason?: string
   ): Promise<Company> {
-    try {
-      console.log('🔄 Atualizando status da empresa:', companyId, '→', status);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/status`, {
-        method: 'PATCH',
-        body: { status, reason },
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar status:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Status atualizado');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar status:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<Company>(`companies/${companyId}/status`, 'PATCH', { status, reason });
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar status da empresa.');
   }
 
   /**
@@ -252,7 +179,7 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/taxas
    */
   async getCompanyTaxes(companyId: string): Promise<CompanyTaxes> {
-    const response = await edgeFunctionsProxy.get<CompanyTaxes>(`companies/${companyId}/taxas`);
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/taxas`, 'GET');
     if (response.success && response.data) {
       // A API retorna as taxas dentro de um objeto { taxas: ... }
       return response.data.taxas;
@@ -265,26 +192,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/taxas
    */
   async updateCompanyTaxes(companyId: string, taxes: Partial<CompanyTaxes>): Promise<CompanyTaxes> {
-    try {
-      console.log('💰 Atualizando taxas da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/taxas`, {
-        method: 'PATCH',
-        body: taxes,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar taxas:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Taxas atualizadas');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar taxas:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<CompanyTaxes>(`companies/${companyId}/taxas`, 'PATCH', taxes);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar taxas da empresa.');
   }
 
   /**
@@ -292,7 +202,7 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/config
    */
   async getCompanyConfig(companyId: string): Promise<CompanyConfig> {
-    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/config`);
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/config`, 'GET');
     if (response.success && response.data.config) return response.data.config;
     throw new Error(response.error || 'Erro ao buscar config da empresa.');
   }
@@ -302,26 +212,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/config
    */
   async updateCompanyConfig(companyId: string, config: Partial<CompanyConfig>): Promise<CompanyConfig> {
-    try {
-      console.log('⚙️ Atualizando configurações da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/config`, {
-        method: 'PATCH',
-        body: config,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar configurações:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Configurações atualizadas');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar configurações:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<CompanyConfig>(`companies/${companyId}/config`, 'PATCH', config);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar configurações da empresa.');
   }
 
   /**
@@ -329,7 +222,7 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/reserva
    */
   async getCompanyReserve(companyId: string): Promise<CompanyReserve> {
-    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/reserva`);
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/reserva`, 'GET');
     if (response.success && response.data.reserva) return response.data.reserva;
     throw new Error(response.error || 'Erro ao buscar reserva da empresa.');
   }
@@ -339,26 +232,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/reserva
    */
   async updateCompanyReserve(companyId: string, reserve: Partial<CompanyReserve>): Promise<CompanyReserve> {
-    try {
-      console.log('🏦 Atualizando reserva da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/reserva`, {
-        method: 'PATCH',
-        body: reserve,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar reserva:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Reserva atualizada');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar reserva:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<CompanyReserve>(`companies/${companyId}/reserva`, 'PATCH', reserve);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar reserva da empresa.');
   }
 
   /**
@@ -366,7 +242,7 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/docs
    */
   async getCompanyDocuments(companyId: string): Promise<CompanyDocuments> {
-    const response = await edgeFunctionsProxy.get<any>(`companies/${companyId}/docs`);
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/docs`, 'GET');
     if (response.success && response.data.docs) return response.data.docs;
     throw new Error(response.error || 'Erro ao buscar documentos da empresa.');
   }
@@ -376,26 +252,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/docs
    */
   async updateCompanyDocuments(companyId: string, documents: Partial<CompanyDocuments>): Promise<CompanyDocuments> {
-    try {
-      console.log('📄 Atualizando documentos da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/docs`, {
-        method: 'PATCH',
-        body: documents,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar documentos:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Documentos atualizados');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar documentos:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<CompanyDocuments>(`companies/${companyId}/docs`, 'PATCH', documents);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar documentos da empresa.');
   }
 
   /**
@@ -403,57 +262,29 @@ export class CompanyService {
    * GET /functions/v1/companies/:id/financial-info
    */
   async getCompanyFinancialInfo(companyId: string): Promise<CompanyFinancialInfo> {
-    try {
-      console.log('💼 Buscando informações financeiras da empresa:', companyId);
-
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/financial-info`, {
-        method: 'GET',
-      });
-
-      if (error) {
-        console.error('❌ Erro ao buscar informações financeiras:', error.message);
-        throw error;
-      }
-
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao buscar informações financeiras:', error);
-      throw error;
+    const response = await edgeFunctionsProxy.invoke<CompanyFinancialInfo>(`companies/${companyId}/financial-info`, 'GET');
+    if (response.success && response.data) {
+      return response.data;
     }
+    throw new Error(response.error || 'Erro ao buscar informações financeiras da empresa.');
   }
 
   /**
    * GET /functions/v1/companies/:id/adq
    */
   async getCompanyAcquirers(companyId: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/adq`, {
-        method: 'GET',
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao buscar adquirentes da empresa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/adq`, 'GET');
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao buscar adquirentes da empresa.');
   }
 
   /**
    * PATCH /functions/v1/companies/:id/adq
    */
   async updateCompanyAcquirers(companyId: string, acquirersData: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`companies/${companyId}/adq`, {
-        method: 'PATCH',
-        body: acquirersData,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao atualizar adquirentes da empresa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<any>(`companies/${companyId}/adq`, 'PATCH', acquirersData);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar adquirentes da empresa.');
   }
 
   /**
@@ -461,26 +292,10 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/taxas-bulk
    */
   async updateTaxesBulk(taxes: Partial<CompanyTaxes>): Promise<{ updatedCount: number }> {
-    try {
-      console.log('💰 Atualizando taxas em massa...');
-
-      const { data, error } = await supabase.functions.invoke('companies/0/taxas-bulk', {
-        method: 'PATCH',
-        body: taxes,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar taxas em massa:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Taxas atualizadas em massa');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar taxas em massa:', error);
-      throw error;
-    }
+    // Usamos um ID placeholder como '0' ou 'bulk' que a API ignora
+    const response = await edgeFunctionsProxy.invoke<{ updatedCount: number }>('companies/0/taxas-bulk', 'PATCH', taxes);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar taxas em massa.');
   }
 
   /**
@@ -488,26 +303,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/config-bulk
    */
   async updateConfigBulk(config: Partial<CompanyConfig>): Promise<{ updatedCount: number }> {
-    try {
-      console.log('⚙️ Atualizando configurações em massa...');
-
-      const { data, error } = await supabase.functions.invoke('companies/0/config-bulk', {
-        method: 'PATCH',
-        body: config,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar configurações em massa:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Configurações atualizadas em massa');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar configurações em massa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<{ updatedCount: number }>('companies/0/config-bulk', 'PATCH', config);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar configurações em massa.');
   }
 
   /**
@@ -515,26 +313,9 @@ export class CompanyService {
    * PATCH /functions/v1/companies/:id/reserva-bulk
    */
   async updateReserveBulk(reserve: Partial<CompanyReserve>): Promise<{ updatedCount: number }> {
-    try {
-      console.log('🏦 Atualizando reservas em massa...');
-
-      const { data, error } = await supabase.functions.invoke('companies/0/reserva-bulk', {
-        method: 'PATCH',
-        body: reserve,
-      });
-
-      if (error) {
-        console.error('❌ Erro ao atualizar reservas em massa:', error.message);
-        throw error;
-      }
-
-      console.log('✅ Reservas atualizadas em massa');
-      return data;
-
-    } catch (error) {
-      console.error('❌ Erro inesperado ao atualizar reservas em massa:', error);
-      throw error;
-    }
+    const response = await edgeFunctionsProxy.invoke<{ updatedCount: number }>('companies/0/reserva-bulk', 'PATCH', reserve);
+    if (response.success && response.data) return response.data;
+    throw new Error(response.error || 'Erro ao atualizar reservas em massa.');
   }
 
   /**

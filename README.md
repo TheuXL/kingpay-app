@@ -62,3 +62,5 @@ eas build --profile development --platform android
 npx expo start --dev-client
 
 npm run test:real
+
+npm test -- --watchAll=false src/features/authentication/screens/__tests__/LoginScreen.test.tsx

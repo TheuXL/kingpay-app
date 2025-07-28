@@ -28,6 +28,12 @@ export interface DashboardData {
   countAntecipacao: number;
   sumAntecipacao: number;
   countAntecipacaoChargeback: number;
+  // Propriedades calculadas adicionais
+  taxaAprovacao?: number;
+  taxaChargeback?: number;
+  ticketMedio?: number;
+  sumPixPaid?: number;
+  sumBoletoPaid?: number;
   sumAntecipacaoChargeback: number;
   countAntecipacaoPreChargeback: number;
   sumAntecipacaoPreChargeback: number;

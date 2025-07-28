@@ -1,52 +1,51 @@
 /**
- * Módulo: Tickets de Suporte
+ * Serviço para tickets de suporte
  */
 import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
+import { CreateTicketPayload, SendMessagePayload, Ticket, TicketMessage } from "../types";
 
-export interface Ticket {
-    id: string;
-    subject: string;
-    status: 'pending' | 'open' | 'closed';
-    created_at: string;
+class SupportTicketService {
+    async createTicket(payload: CreateTicketPayload): Promise<Ticket> {
+        const response = await edgeFunctionsProxy.invoke('support-tickets', 'POST', {
+            action: 'create_ticket',
+            payload,
+        });
+        if (response.success && response.data?.ticket) {
+            return response.data.ticket as Ticket;
+        }
+        throw new Error(response.error || 'Erro ao criar ticket de suporte.');
+    }
+
+    async getTickets(): Promise<Ticket[]> {
+        const response = await edgeFunctionsProxy.invoke('support-tickets', 'POST', {
+            action: 'list_tickets',
+        });
+        if (response.success && response.data) {
+            return response.data as Ticket[];
+        }
+        throw new Error(response.error || 'Erro ao listar tickets de suporte.');
+    }
+
+    async getTicketMessages(ticketId: string): Promise<TicketMessage[]> {
+        const response = await edgeFunctionsProxy.invoke('support-tickets', 'POST', {
+            action: 'list_messages',
+            payload: { ticket_id: ticketId },
+        });
+        if (response.success && response.data) {
+            return response.data as TicketMessage[];
+        }
+        throw new Error(response.error || `Erro ao buscar mensagens para o ticket ${ticketId}.`);
+    }
+
+    async sendMessage(payload: SendMessagePayload): Promise<void> {
+        const response = await edgeFunctionsProxy.invoke('support-tickets', 'POST', {
+            action: 'send_message',
+            payload,
+        });
+        if (!response.success) {
+            throw new Error(response.error || 'Erro ao enviar mensagem no ticket.');
+        }
+    }
 }
 
-export interface TicketMessage {
-    id: string;
-    message: string;
-    created_at: string;
-    is_admin_response: boolean;
-}
-
-const createTicket = async (subject: string, message: string) => {
-    return edgeFunctionsProxy.post('support-tickets', {
-        action: 'create_ticket',
-        payload: { subject, message }
-    });
-};
-
-const listTickets = async () => {
-    return edgeFunctionsProxy.post<{ tickets: Ticket[] }>('support-tickets', {
-        action: 'list_tickets'
-    });
-};
-
-const listTicketMessages = async (ticketId: string) => {
-    return edgeFunctionsProxy.post<{ messages: TicketMessage[] }>('support-tickets', {
-        action: 'list_messages',
-        payload: { ticket_id: ticketId }
-    });
-};
-
-const sendTicketMessage = async (ticketId: string, message: string) => {
-    return edgeFunctionsProxy.post('support-tickets', {
-        action: 'send_message',
-        payload: { ticket_id: ticketId, message }
-    });
-};
-
-export const supportTicketService = {
-    createTicket,
-    listTickets,
-    listTicketMessages,
-    sendTicketMessage
-}; 
+export const supportTicketService = new SupportTicketService(); 

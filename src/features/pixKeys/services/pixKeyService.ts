@@ -3,26 +3,20 @@
  * Endpoints para consulta e criação de chaves Pix pelo usuário.
  */
 import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
+import { PixKey } from "../types";
 
-export interface PixKey {
-    id: string;
-    key_type: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
-    key_value: string;
-    status: 'pending' | 'approved' | 'denied';
-    createdat: string;
-}
-
-export interface CreatePixKeyRequest {
-    key_type: 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
-    key_value: string;
-}
-
-export class PixKeyService {
-    async getPixKeys() {
-        return edgeFunctionsProxy.get<{ data: PixKey[] }>('pix-key');
+class PixKeyService {
+    async getPixKeys(): Promise<{ data: PixKey[] }> {
+        return edgeFunctionsProxy.invoke('pix-key', 'GET');
     }
 
-    async createPixKey(payload: CreatePixKeyRequest) {
-        return edgeFunctionsProxy.post<PixKey>('pix-key', payload);
+    async createPixKey(payload: { key: string; type: string; description?: string }): Promise<PixKey> {
+        return edgeFunctionsProxy.invoke('pix-key', 'POST', payload);
     }
-} 
+    
+    async deletePixKey(id: string): Promise<void> {
+        return edgeFunctionsProxy.invoke(`pix-key/${id}`, 'DELETE');
+    }
+}
+
+export const pixKeyService = new PixKeyService(); 

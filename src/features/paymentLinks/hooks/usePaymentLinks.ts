@@ -1,39 +1,43 @@
-import { useCallback, useEffect, useState } from 'react';
-import { PaymentLink, getPaymentLinks } from '../services/paymentLinkService';
+import { useEffect, useState, useCallback } from 'react';
+import { paymentLinkService } from '../services/paymentLinkService';
+import { PaymentLink } from '../types';
+import { logger } from '@/lib/logger/logger';
 
 export const usePaymentLinks = () => {
-  const [links, setLinks] = useState<PaymentLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLinks = useCallback(async () => {
+  const fetchPaymentLinks = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getPaymentLinks();
-      if (response.success && response.data) {
-        // A API retorna { data: [...] }
-        setLinks(Array.isArray(response.data.data) ? response.data.data : []);
-      } else {
-        setError(response.error || 'Erro ao buscar links de pagamento.');
-      }
+      logger.info('usePaymentLinks', 'Buscando links de pagamento');
+      const links = await paymentLinkService.getPaymentLinks();
+      setPaymentLinks(links);
+      logger.success('usePaymentLinks', 'Links de pagamento carregados', { count: links.length });
     } catch (err: any) {
-      console.error('Falha ao buscar links de pagamento:', err);
-      setError(err.message || 'Ocorreu um erro ao carregar os links.');
+      const errorMessage = err.message || 'Ocorreu um erro ao buscar os links de pagamento.';
+      setError(errorMessage);
+      logger.error('usePaymentLinks', errorMessage, err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+    fetchPaymentLinks();
+  }, [fetchPaymentLinks]);
+
+  const refreshPaymentLinks = useCallback(() => {
+    fetchPaymentLinks();
+  }, [fetchPaymentLinks]);
 
   return {
-    links,
+    paymentLinks,
     isLoading,
     error,
-    refetch: fetchLinks,
+    refreshPaymentLinks,
   };
 };
 

@@ -1,27 +1,27 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { AuthForm } from '../components/AuthForm';
 import { useAuthentication } from '../hooks/useAuthentication';
 
-const LoginScreen = () => {
-  const { login, loading, error } = useAuthentication();
+export default function LoginScreen() {
   const router = useRouter();
+  const { login, isLoading, error } = useAuthentication();
 
-  const handleLogin = async ({ email, password }: { email: string, password: string }) => {
-    const success = await login({ email, password });
-    if (!success) {
-      Alert.alert('Erro no Login', error || 'Não foi possível fazer login. Verifique suas credenciais.');
+  const handleLoginSubmit = async (data: any) => {
+    const success = await login(data.email, data.password);
+    if (success) {
+      router.replace('/(app)');
     }
-    // Não é mais necessário redirecionar aqui. O App.tsx cuidará disso.
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
       <AuthForm
-        onSubmit={handleLogin}
-        buttonText={loading ? 'Entrando...' : 'Entrar'}
+        onSubmit={handleLoginSubmit}
+        buttonText={isLoading ? 'Entrando...' : 'Entrar'}
+        isSignUp={false}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
       <Text style={styles.link} onPress={() => router.push('/(auth)/signup')}>
@@ -55,6 +55,4 @@ const styles = StyleSheet.create({
     color: '#007BFF',
     marginTop: 15,
   },
-});
-
-export default LoginScreen; 
+}); 

@@ -1,6 +1,6 @@
 import { colors } from '@/theme/colors';
 import { useRouter } from 'expo-router';
-import { ArrowRightLeft, Link, Wallet2 } from 'lucide-react-native'; // Wallet2 tem um design mais próximo
+import { ArrowRightLeft, Link, Wallet2 } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -15,7 +15,10 @@ const ActionButton = ({
 }) => {
   const router = useRouter();
   return (
-    <TouchableOpacity style={styles.actionButton} onPress={() => router.push(route)}>
+    <TouchableOpacity
+      style={styles.actionButton}
+      onPress={() => router.push(route as `http${string}` | `/${string}`)}
+    >
       <View style={styles.iconContainer}>
         <Icon color={colors.primary} size={28} />
       </View>
@@ -27,9 +30,9 @@ const ActionButton = ({
 const QuickActions: React.FC = () => {
   return (
     <View style={styles.container}>
-      <ActionButton icon={Wallet2} label="Carteira" route="/carteira" />
-      <ActionButton icon={ArrowRightLeft} label="Transações" route="/carteira" />
-      <ActionButton icon={Link} label="Link de Pag." route="/links" />
+      <ActionButton icon={Wallet2} label='Carteira' route='/carteira' />
+      <ActionButton icon={ArrowRightLeft} label='Transações' route='/transactions' />
+      <ActionButton icon={Link} label='Link de Pag.' route='/links' />
     </View>
   );
 };
@@ -38,12 +41,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'flex-start', // Alinha os itens no topo
-    paddingHorizontal: 8,
+    alignItems: 'flex-start',
+    paddingVertical: 24,
   },
   actionButton: {
     alignItems: 'center',
-    maxWidth: 90, // Para evitar que o texto quebre de forma estranha
+    maxWidth: 90,
   },
   iconContainer: {
     backgroundColor: '#FFFFFF',

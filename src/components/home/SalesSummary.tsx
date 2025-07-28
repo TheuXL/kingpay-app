@@ -1,26 +1,35 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import SalesAnalysisCard from './SalesAnalysisCard'; // Análise de Vendas
-import SalesChart from './SalesChart'; // Gráfico de Receita
+import { StyleSheet, View, Text } from 'react-native';
+import SalesAnalysisCard from './SalesAnalysisCard';
+import SalesChart from './SalesChart';
 
-const SalesSummary = ({ chartData, salesSummary, chartError, salesError }) => {
+interface SalesSummaryProps {
+  chartData: any[];
+  dashboardData: any;
+}
+
+const SalesSummary: React.FC<SalesSummaryProps> = ({
+  chartData,
+  dashboardData,
+}) => {
   return (
     <View style={styles.container}>
-      <SalesChart 
-        chartData={chartData}
-        error={chartError}
-      />
-      <SalesAnalysisCard
-        salesData={salesSummary}
-        error={salesError}
-      />
+      <Text style={styles.sectionTitle}>Resumo de vendas</Text>
+      <SalesChart chartData={chartData} />
+      <SalesAnalysisCard dashboardData={dashboardData} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    marginVertical: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 16,
   },
 });
 

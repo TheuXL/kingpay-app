@@ -6,32 +6,28 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SaldoCardProps {
-  saldo?: number;
-  onAntecipar: () => void;
-  onPress?: () => void;
+  balance: number;
 }
 
-const SaldoCard: React.FC<SaldoCardProps> = ({ saldo = 0, onAntecipar, onPress }) => {
+const SaldoCard: React.FC<SaldoCardProps> = ({ balance }) => {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-      <View style={styles.cardContainer}>
-        <LinearGradient
-          colors={['rgba(26, 26, 255, 0.85)', 'rgba(26, 26, 255, 1)']}
-          style={styles.gradient}
-        >
-          <View style={styles.header}>
-            <Text style={styles.label}>Saldo disponível</Text>
-            <ChevronRight color="#FFF" size={24} style={styles.chevronIcon} />
-          </View>
-          
-          <Text style={styles.value}>{formatCurrency(saldo)}</Text>
+    <TouchableOpacity style={styles.cardContainer} activeOpacity={0.9}>
+      <LinearGradient
+        colors={['rgba(26, 26, 255, 0.85)', 'rgba(26, 26, 255, 1)']}
+        style={styles.gradient}
+      >
+        <View style={styles.header}>
+          <Text style={styles.label}>Saldo disponível</Text>
+          <ChevronRight color='#FFF' size={24} style={styles.chevronIcon} />
+        </View>
 
-          <TouchableOpacity style={styles.button} onPress={onAntecipar}>
-            <Text style={styles.buttonText}>Antecipar</Text>
-            <ArrowUp color={colors.primary} size={20} />
-          </TouchableOpacity>
-        </LinearGradient>
-      </View>
+        <Text style={styles.value}>{formatCurrency(balance)}</Text>
+
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Antecipar</Text>
+          <ArrowUp color={colors.primary} size={20} />
+        </TouchableOpacity>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
@@ -45,6 +41,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
+    marginVertical: 16,
   },
   gradient: {
     paddingVertical: 24,

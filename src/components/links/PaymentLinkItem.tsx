@@ -1,48 +1,65 @@
-import { colors } from '@/theme/colors';
-import { formatCurrency } from '@/utils/formatters';
-import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { PaymentLink } from '@/features/paymentLinks/types';
+import { useRouter } from 'expo-router';
 
-const PaymentMethodIcon = ({ method }) => {
-    const icons = {
-        pix: 'aperture',
-        cartao: 'credit-card',
-        boleto: 'file-text'
-    };
-    return <Feather name={icons[method] || 'dollar-sign'} size={16} color={colors.textSecondary} style={styles.methodIcon} />;
+interface PaymentLinkItemProps {
+  link: PaymentLink;
 }
 
-export const PaymentLinkItem = ({ item, onCopy, onToggle, onEdit }) => {
+const PaymentLinkItem: React.FC<PaymentLinkItemProps> = ({ link }) => {
+  const router = useRouter();
+
+  const handleEdit = () => {
+    router.push(`/links/${link.id}`);
+  };
+
+  const handleCopyLink = () => {
+    // Lógica para copiar o link
+    console.log(`Copiar link: ${link.id}`);
+  };
+
+  const handleQRCode = () => {
+    // Lógica para mostrar QR Code
+    console.log(`QR Code para: ${link.id}`);
+  };
+
+  const handleToggleStatus = (value: boolean) => {
+    // Lógica para atualizar o status do link
+    console.log(`Alterar status para ${value} para o link: ${link.id}`);
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.name}>{item.nome}</Text>
-        <Text style={styles.value}>{formatCurrency(item.valor)}</Text>
-      </View>
-      <View style={styles.details}>
-        <View style={styles.methods}>
-            {item.formas_de_pagamento.map(method => <PaymentMethodIcon key={method} method={method} />)}
-        </View>
-        <View style={styles.status}>
-            <Text style={item.ativo ? styles.active : styles.inactive}>{item.ativo ? 'Ativo' : 'Inativo'}</Text>
-            <Switch
-                value={item.ativo}
-                onValueChange={onToggle}
-                trackColor={{ false: '#767577', true: colors.primary }}
-                thumbColor={'#f4f3f4'}
-            />
-        </View>
+        <Text style={styles.title} numberOfLines={1}>{link.nome}</Text>
+        <Text style={styles.price}>
+          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(link.valor / 100)}
+        </Text>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.actionButton} onPress={onCopy}>
-            <Feather name="copy" size={18} color={colors.primary} />
-            <Text style={styles.actionText}>Copiar Link</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={handleCopyLink}>
+          <Ionicons name="copy-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>Copiar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={onEdit}>
-            <Feather name="edit" size={18} color={colors.textSecondary} />
-            <Text style={styles.actionText}>Editar</Text>
+        <TouchableOpacity style={styles.actionButton} onPress={handleQRCode}>
+          <Ionicons name="qr-code-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>QR Code</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
+          <Ionicons name="pencil-outline" size={24} color="#007AFF" />
+          <Text style={styles.actionText}>Editar</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.footer}>
+        <Text style={styles.statusText}>Ativo</Text>
+        <Switch
+          value={link.ativo}
+          onValueChange={handleToggleStatus}
+          thumbColor={link.ativo ? '#34C759' : '#f4f3f4'}
+          ios_backgroundColor="#3e3e3e"
+        />
       </View>
     </View>
   );
@@ -50,66 +67,58 @@ export const PaymentLinkItem = ({ item, onCopy, onToggle, onEdit }) => {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: colors.card,
-        borderRadius: 16,
-        padding: 20,
-        marginBottom: 16,
+      backgroundColor: 'white',
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
     },
-    name: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.textPrimary,
+    title: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      flex: 1,
     },
-    value: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.primary,
-    },
-    details: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    methods: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    methodIcon: {
-        // ...
-    },
-    status: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    active: {
-        color: colors.success,
-        fontWeight: '600'
-    },
-    inactive: {
-        color: colors.textSecondary,
+    price: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#34C759',
     },
     actions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        gap: 20,
-        borderTopWidth: 1,
-        borderTopColor: colors.background,
-        paddingTop: 12,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: '#E5E5EA',
+      paddingVertical: 12,
     },
     actionButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+      alignItems: 'center',
     },
     actionText: {
-        fontSize: 14,
-        color: colors.textSecondary,
-    }
-}); 
+      color: '#007AFF',
+      marginTop: 4,
+      fontSize: 12,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: 16,
+    },
+    statusText: {
+      fontSize: 16,
+      color: '#3C3C43',
+    },
+});
+  
+export default PaymentLinkItem; 

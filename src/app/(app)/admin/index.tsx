@@ -13,17 +13,20 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
-import { edgeFunctionsService } from '../../../services/edgeFunctions';
+import { useAppContext } from '../../../contexts/AppContext';
+import { anticipationService } from '../../../features/anticipations/services/anticipationService';
+import { Anticipation } from '../../../features/anticipations/types';
+import { withdrawalService } from '../../../features/withdrawals/services/withdrawalService';
+import { Withdrawal } from '../../../features/withdrawals/types';
 
 interface AdminStats {
   pendingWithdrawals: number;
@@ -36,7 +39,7 @@ interface AdminStats {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAppContext();
   
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,40 +48,35 @@ export default function AdminDashboard() {
 
   const loadAdminStats = async () => {
     try {
+      setLoading(true);
       setError(null);
       console.log('📊 Carregando estatísticas administrativas...');
 
-      // Carregar dados paralelos
-      const [withdrawalsResponse, anticipationsResponse] = await Promise.all([
-        edgeFunctionsService.getWithdrawals({ limit: 100, offset: 0 }),
-        edgeFunctionsService.getAnticipations({ limit: 100, offset: 0 })
+      const [withdrawals, anticipations] = await Promise.all([
+        withdrawalService.getWithdrawals(),
+        anticipationService.getAnticipations()
       ]);
 
-      // Processar saques
-      const withdrawals = withdrawalsResponse.success && withdrawalsResponse.data ? withdrawalsResponse.data : [];
-      const pendingWithdrawals = withdrawals.filter((w: any) => w.status === 'pending').length;
+      const pendingWithdrawals = (withdrawals || []).filter((w: Withdrawal) => w.status === 'pending').length;
+      const pendingAnticipations = (anticipations || []).filter((a: Anticipation) => a.status === 'pending').length;
       
-      // Processar antecipações
-      const anticipations = anticipationsResponse.success && anticipationsResponse.data ? anticipationsResponse.data : [];
-      const pendingAnticipations = anticipations.filter((a: any) => a.status === 'pending').length;
-
       // Calcular estatísticas do dia
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const totalWithdrawalsToday = withdrawals.filter((w: any) => 
-        new Date(w.created_at) >= today
+      const totalWithdrawalsToday = (withdrawals || []).filter((w: Withdrawal) => 
+        new Date(w.createdat) >= today
       ).length;
       
-      const totalAnticipationsToday = anticipations.filter((a: any) => 
+      const totalAnticipationsToday = (anticipations || []).filter((a: Anticipation) => 
         new Date(a.created_at) >= today
       ).length;
 
       const approvedToday = [
-        ...withdrawals.filter((w: any) => 
-          w.status === 'approved' && new Date(w.updated_at || w.created_at) >= today
+        ...(withdrawals || []).filter((w: Withdrawal) => 
+          w.status === 'approved' && new Date(w.updatedat || w.createdat) >= today
         ),
-        ...anticipations.filter((a: any) => 
+        ...(anticipations || []).filter((a: Anticipation) => 
           a.status === 'approved' && new Date(a.updated_at || a.created_at) >= today
         )
       ].length;

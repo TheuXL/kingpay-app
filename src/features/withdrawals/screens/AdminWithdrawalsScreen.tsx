@@ -13,22 +13,22 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { formatCurrency } from '../../../utils/currency';
 import { showToast } from '../../../utils/toast';
 import { useWithdrawals } from '../hooks/useWithdrawals';
-import { updateWithdrawalStatus } from '../services/withdrawalService';
+import { withdrawalService } from '../services/withdrawalService';
 
 // A interface pode ser movida para um arquivo de tipos se necessário
 interface WithdrawalAdmin {
@@ -79,9 +79,9 @@ export function AdminWithdrawalsScreen() {
           onPress: async () => {
             try {
               setActionLoading(withdrawal.id);
-              await updateWithdrawalStatus(
+              await withdrawalService.updateWithdrawal(
                 withdrawal.id,
-                'approved',
+                { status: 'approved', reason_for_denial: '' },
               );
               showToast('Saque aprovado com sucesso!');
               await refetch(); // Recarregar dados com o hook
@@ -112,10 +112,9 @@ export function AdminWithdrawalsScreen() {
 
     try {
       setActionLoading(selectedWithdrawal.id);
-      await updateWithdrawalStatus(
+      await withdrawalService.updateWithdrawal(
         selectedWithdrawal.id,
-        'cancelled',
-        denyReason,
+        { status: 'cancelled', reason_for_denial: denyReason },
       );
       showToast('Saque negado com sucesso!');
       setDenyModalVisible(false);

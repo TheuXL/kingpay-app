@@ -12,13 +12,13 @@ interface ChartDataItem {
 }
 
 interface SalesChartProps {
-  data: ChartDataItem[] | null;
+  chartData: ChartDataItem[] | null;
 }
 
-const SalesChart: React.FC<SalesChartProps> = ({ data }) => {
+const SalesChart: React.FC<SalesChartProps> = ({ chartData }) => {
   const router = useRouter();
 
-  if (!data || data.length === 0) {
+  if (!chartData || chartData.length === 0) {
     return (
       <View style={[styles.card, styles.emptyCard]}>
         <Text style={styles.emptyText}>Sem dados de vendas para exibir.</Text>
@@ -26,34 +26,44 @@ const SalesChart: React.FC<SalesChartProps> = ({ data }) => {
     );
   }
 
-  const chartData = data.slice(0, 12).map(item => ({
-    value: item.total_paid_amount / 100, // Ajuste para centavos
+  const processedData = chartData.slice(0, 12).map(item => ({
+    value: item.total_paid_amount / 100,
     label: new Date(item.data).toLocaleString('default', { month: 'short' }),
     frontColor: colors.primary,
     topLabelComponent: () => (
-      <Text style={{color: 'gray', fontSize: 10, marginBottom: 6}}>
+      <Text style={{ color: 'gray', fontSize: 10, marginBottom: 6 }}>
         {formatCurrency(item.total_paid_amount / 100, false)}
       </Text>
     ),
   }));
 
-  const totalRevenue = data.reduce((sum, item) => sum + item.total_paid_amount, 0);
+  const totalRevenue = chartData.reduce(
+    (sum, item) => sum + item.total_paid_amount,
+    0,
+  );
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Gráfico de Receita</Text>
-          <Text style={styles.totalRevenue}>{formatCurrency(totalRevenue / 100)}</Text>
+          <Text style={styles.totalRevenue}>
+            {formatCurrency(totalRevenue / 100)}
+          </Text>
         </View>
-        <TouchableOpacity style={styles.viewAllButton} onPress={() => router.push('/dashboard')}>
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={() =>
+            router.push('/dashboard' as `http${string}` | `/${string}`)
+          }
+        >
           <Text style={styles.viewAllText}>Ver tudo</Text>
-          <ChevronRight color="#3F3F46" size={16} />
+          <ChevronRight color='#3F3F46' size={16} />
         </TouchableOpacity>
       </View>
       <View style={styles.chartContainer}>
         <BarChart
-          data={chartData}
+          data={processedData}
           barWidth={16}
           spacing={20}
           roundedTop
@@ -122,7 +132,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   chartContainer: {
-    paddingLeft: 10, // Ajuste para dar espaço aos rótulos
+    paddingLeft: 10,
   },
 });
 

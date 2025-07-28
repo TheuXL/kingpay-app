@@ -5,12 +5,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface JourneyCardProps {
   progress?: number;
-  onPress?: () => void;
 }
 
-const JourneyCard: React.FC<JourneyCardProps> = ({ progress = 0.6, onPress }) => {
+const JourneyCard: React.FC<JourneyCardProps> = ({ progress = 0.6 }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
       <View style={styles.iconContainer}>
         <Trophy color={colors.white} size={28} />
       </View>
@@ -18,7 +17,9 @@ const JourneyCard: React.FC<JourneyCardProps> = ({ progress = 0.6, onPress }) =>
         <Text style={styles.title}>Jornada KingPay</Text>
         <Text style={styles.subtitle}>Receba recompensas pelo desempenho</Text>
         <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarForeground, { width: `${progress * 100}%` }]} />
+          <View
+            style={[styles.progressBarForeground, { width: `${progress * 100}%` }]}
+          />
         </View>
       </View>
     </TouchableOpacity>
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 3,
+    marginVertical: 16,
   },
   iconContainer: {
     width: 52,

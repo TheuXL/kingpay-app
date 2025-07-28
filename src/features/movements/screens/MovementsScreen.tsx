@@ -12,24 +12,15 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../../contexts/AppContext';
-import { walletService } from '../../../features/financial/services';
+import { useAppContext } from '../../../contexts/AppContext';
+import { walletService } from '../../../features/financial/services/walletService';
+import { Movement as ApiMovement } from '../../../features/financial/types';
 import { pixKeyService } from '../../../features/pixKeys/services';
 // ✅ IMPORTAR UTILITÁRIOS DE VALIDAÇÃO DE TEXTO
 import { useRouter } from 'expo-router';
 import { SafeView, safeText } from '../../../utils/textValidation';
 
 const { width } = Dimensions.get('window');
-
-interface Movement {
-  id: string;
-  type: 'income' | 'outcome' | 'pending';
-  description: string;
-  amount: number;
-  date: string;
-  status: 'completed' | 'pending' | 'failed';
-  category: 'pix' | 'card' | 'transfer' | 'anticipation';
-}
 
 interface PixKey {
   id: string;
@@ -41,90 +32,70 @@ interface PixKey {
 
 type TabType = 'extracts' | 'anticipations' | 'transfers' | 'pix-keys';
 
+// Interface para o modelo de dados que a UI espera
+interface UIMovement {
+  id: string;
+  type: 'income' | 'outcome' | 'pending';
+  description: string;
+  amount: number;
+  date: string;
+  status: 'completed' | 'pending' | 'failed';
+  category: 'pix' | 'card' | 'transfer' | 'anticipation' | 'other';
+}
+
+// Função para mapear a descrição da API para uma categoria da UI
+const getCategoryFromTipo = (tipo: string): UIMovement['category'] => {
+    const lowerTipo = tipo.toLowerCase();
+    if (lowerTipo.includes('pix')) return 'pix';
+    if (lowerTipo.includes('cartão')) return 'card';
+    if (lowerTipo.includes('transferência')) return 'transfer';
+    if (lowerTipo.includes('antecipação')) return 'anticipation';
+    return 'other';
+};
+
+// Adaptador para converter dados da API para o formato da UI
+const adaptMovementData = (apiMovement: ApiMovement): UIMovement => {
+  const isIncome = apiMovement.valor > 0;
+  return {
+    id: apiMovement.id,
+    type: isIncome ? 'income' : 'outcome',
+    description: apiMovement.tipo,
+    amount: Math.abs(apiMovement.valor),
+    date: apiMovement.created_at,
+    status: 'completed', // A API não parece fornecer status por transação, então definimos um padrão
+    category: getCategoryFromTipo(apiMovement.tipo),
+  };
+};
+
 export default function MovementsScreen() {
-  const { user } = useAuth();
+  const { user } = useAppContext();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('extracts');
   const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
   
   // Estados para dados reais
-  const [movements, setMovements] = useState<Movement[]>([]);
+  const [movements, setMovements] = useState<UIMovement[]>([]);
   const [pixKeys, setPixKeys] = useState<PixKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    loadData();
-  }, [activeTab]);
-
-  /**
-   * 🔄 CARREGAR DADOS BASEADO NA TAB ATIVA
-   */
-  const loadData = async () => {
+  const fetchMovements = async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      if (!user?.id) {
-        setError('Usuário não autenticado');
-        return;
-      }
-
-      const userId = user.id;
-
-      if (activeTab === 'extracts') {
-        await loadMovements(userId);
-      } else if (activeTab === 'pix-keys') {
-        await loadPixKeys(userId);
-      }
-      // TODO: Implementar antecipações e transferências quando necessário
-
-    } catch (error) {
-      console.error('❌ Erro ao carregar dados:', error);
-      setError('Falha ao carregar dados. Tente novamente.');
+      const apiData = await walletService.getMovements();
+      const adaptedData = (apiData || []).map(adaptMovementData);
+      setMovements(adaptedData);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * 🏦 CARREGAR MOVIMENTAÇÕES DO EXTRATO
-   */
-  const loadMovements = async (userId: string) => {
-    try {
-      console.log('🏦 Carregando movimentações do extrato...');
-      
-      // Corrigido: page = 1, limit = 50
-      const extractData = await walletService.getStatement(userId, 1, 50);
-      
-      console.log('📊 Resultado do extrato:', extractData);
-
-      if (extractData && Array.isArray(extractData.extrato)) {
-        // Converter dados do extrato para formato de Movement
-        const convertedMovements: Movement[] = extractData.extrato.map((entry: any) => ({
-          id: entry.id || Math.random().toString(),
-          type: entry.is_credit || entry.entrada ? 'income' : 'outcome',
-          description: entry.description || entry.tipo || 'Movimentação',
-          amount: Math.abs(entry.amount || entry.value || 0),
-          date: entry.date || entry.created_at || new Date().toISOString(),
-          status: 'completed',
-          category: getCategoryFromDescription(entry.description || entry.tipo)
-        }));
-
-        setMovements(convertedMovements);
-        console.log(`✅ ${convertedMovements.length} movimentações carregadas`);
-      } else {
-        console.warn('⚠️ Formato de dados inesperado ou vazio');
-        setMovements([]);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao carregar movimentações:', error);
-      setError(`Erro de conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-      throw error;
-    }
-  };
+  useEffect(() => {
+    fetchMovements();
+  }, []);
 
   /**
    * 🔑 CARREGAR CHAVES PIX
@@ -181,7 +152,7 @@ export default function MovementsScreen() {
    */
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await fetchMovements();
     setRefreshing(false);
   };
 
@@ -230,7 +201,7 @@ export default function MovementsScreen() {
     }
   };
 
-  const renderMovementItem = ({ item }: { item: Movement }) => (
+  const renderMovementItem = ({ item }: { item: UIMovement }) => (
     <TouchableOpacity style={styles.movementItem}>
       <SafeView style={styles.movementLeft}>
         <View style={[

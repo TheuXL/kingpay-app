@@ -1,13 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useAuth } from '../../contexts/AppContext';
+import { useAppContext } from '../../contexts/AppContext';
 
 export const UserDataDisplay = () => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <Text>Carregando dados do usuário...</Text>;
-  }
+  const { user } = useAppContext();
 
   if (!user) {
     return <Text>Nenhum usuário logado.</Text>;

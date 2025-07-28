@@ -1,39 +1,61 @@
 /**
+ * 
  * Módulo: Transações
+ * Endpoint: POST /functions/v1/transactions
  */
-import { supabase } from '@/lib/supabase';
-import { getAuthHeaders } from '@/utils/auth';
+import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
+
+export interface TransactionItem {
+  id: string;
+  description: string;
+  quantity: number;
+  amount: number; // Em centavos
+}
+
+export interface CustomerData {
+  name: string;
+  email: string;
+  tax_id: string; // CPF/CNPJ
+  phone?: string;
+}
+
+export interface TransactionRequest {
+  payment_method: 'PIX' | 'CREDIT_CARD' | 'BOLETO';
+  items: TransactionItem[];
+  customer: CustomerData;
+  amount: number; // Valor total em centavos
+  installments?: number; // Para cartão de crédito
+  card_token?: string; // Token do cartão de crédito
+}
+
+export interface TransactionResponse {
+  success: boolean;
+  transaction_id: string;
+  status: string;
+  pix_qr_code?: string;
+  pix_qr_code_text?: string;
+  boleto_url?: string;
+  boleto_barcode?: string;
+  error?: string;
+}
 
 /**
- * Endpoint: /resumo-transacoes
+ * Cria uma nova transação (PIX, Cartão de Crédito, Boleto)
+ * @param transactionData - Os dados da transação a ser criada.
+ * @returns O resultado da transação.
  */
-export const getTransactionsSummary = async (body: any) => {
-    const headers = await getAuthHeaders();
-    const { data, error } = await supabase.functions.invoke('resumo-transacoes', {
-        method: 'POST',
-        headers,
-        body,
-    });
-    if (error) {
-        console.error('Erro ao invocar a Edge Function: resumo-transacoes', 'Detalhes:', error);
-        throw error;
-    }
-    return data;
-};
+export const createTransaction = async (
+  transactionData: TransactionRequest
+): Promise<TransactionResponse> => {
+  const response = await edgeFunctionsProxy.invoke(
+    'transactions',
+    'POST',
+    transactionData
+  );
 
-/**
- * Endpoint: /historico-transacoes
- */
-export const getTransactionHistory = async (filters: { [key: string]: any } = {}) => {
-    const headers = await getAuthHeaders();
-    const queryString = new URLSearchParams(filters).toString();
-    const { data, error } = await supabase.functions.invoke(`historico-transacoes?${queryString}`, {
-        method: 'GET',
-        headers,
-    });
-    if (error) {
-        console.error('Erro ao invocar a Edge Function: historico-transacoes', 'Detalhes:', error);
-        throw error;
-    }
-    return data;
-};
+  if (response.success && response.data) {
+    return response.data as TransactionResponse;
+  }
+
+  throw new Error(response.error || 'Erro ao criar transação.');
+}; 

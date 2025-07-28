@@ -116,3 +116,30 @@ export interface ExtractFilters {
   limit?: number;
   offset?: number;
 } 
+
+export interface WalletData {
+  w: string; // Wallet ID
+  balance: number;
+  balance_card: number;
+  total: number;
+  a_receber: number;
+  disponivel_para_antecipacao: number;
+  disponivel_para_saque: number;
+  financial_reserve: number;
+}
+
+export interface Movement {
+  id: string;
+  created_at: string;
+  tipo: string;
+  valor: number;
+  saldo_anterior: number;
+  saldo_novo: number;
+  user_id: string;
+  empresa_id: string | null;
+  transacao_id: string | null;
+  saque_id: string | null;
+  fatura_id: string | null;
+  taxa_id: string | null;
+  antecipacao_id: string | null;
+} 

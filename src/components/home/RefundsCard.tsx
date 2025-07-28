@@ -5,80 +5,82 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface RefundsCardProps {
-  data: {
-    sumRefunded: number;
-    sumChargeback: number;
-    totalRefunds: number;
-  } | null;
-  onPeriodChange?: () => void;
-  period?: string;
+  dashboardData: any;
 }
 
-export default function RefundsCard({ data, onPeriodChange, period = "30 dias" }: RefundsCardProps) {
-  if (!data) return null;
+const RefundsCard: React.FC<RefundsCardProps> = ({ dashboardData }) => {
+  if (!dashboardData) {
+    return null;
+  }
 
-  const total = data.totalRefunds || (data.sumRefunded + data.sumChargeback);
-  const refundedPercentage = total > 0 ? (data.sumRefunded / total) * 100 : 0;
-  const chargebackPercentage = total > 0 ? (data.sumChargeback / total) * 100 : 0;
+  const { sumRefunded, sumChargedback } = dashboardData;
+  const total = sumRefunded + sumChargedback;
+  const refundedPercentage = total > 0 ? (sumRefunded / total) * 100 : 0;
+  const chargebackPercentage = total > 0 ? (sumChargedback / total) * 100 : 0;
 
   return (
     <View style={styles.card}>
-      {/* Header com título, valor e dropdown */}
       <View style={styles.header}>
         <View style={styles.titleSection}>
           <Text style={styles.title}>Reembolsos</Text>
           <Text style={styles.value}>{formatCurrency(total)}</Text>
         </View>
-        
-        <TouchableOpacity style={styles.periodDropdown} onPress={onPeriodChange}>
-          <Text style={styles.periodText}>{period}</Text>
-          <MaterialIcons name="keyboard-arrow-down" size={20} color={colors.textSecondary} />
+        <TouchableOpacity style={styles.periodDropdown}>
+          <Text style={styles.periodText}>30 dias</Text>
+          <MaterialIcons
+            name='keyboard-arrow-down'
+            size={20}
+            color={colors.textSecondary}
+          />
         </TouchableOpacity>
       </View>
 
-      {/* Barra de Progresso Multicolorida */}
       <View style={styles.progressBar}>
-        <View style={[styles.progressSegment, { backgroundColor: colors.warning, width: `${refundedPercentage}%` }]} />
-        <View style={[styles.progressSegment, { backgroundColor: colors.info, width: `${chargebackPercentage}%` }]} />
+        <View
+          style={[
+            styles.progressSegment,
+            { backgroundColor: colors.warning, width: `${refundedPercentage}%` },
+          ]}
+        />
+        <View
+          style={[
+            styles.progressSegment,
+            { backgroundColor: colors.info, width: `${chargebackPercentage}%` },
+          ]}
+        />
       </View>
 
-      {/* Legenda */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.warning }]} />
           <Text style={styles.legendText}>Estornos</Text>
-          <Text style={styles.legendValue}>{formatCurrency(data.sumRefunded)}</Text>
+          <Text style={styles.legendValue}>{formatCurrency(sumRefunded)}</Text>
         </View>
-        
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.info }]} />
           <Text style={styles.legendText}>Chargeback</Text>
-          <Text style={styles.legendValue}>{formatCurrency(data.sumChargeback)}</Text>
+          <Text style={styles.legendValue}>
+            {formatCurrency(sumChargedback)}
+          </Text>
         </View>
-        
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+          <View
+            style={[styles.legendDot, { backgroundColor: colors.success }]}
+          />
           <Text style={styles.legendText}>Total</Text>
           <Text style={styles.legendValue}>{formatCurrency(total)}</Text>
         </View>
       </View>
-
-      {/* Paginação */}
-      <View style={styles.pagination}>
-        <View style={styles.paginationDot} />
-        <View style={[styles.paginationDot, styles.paginationDotActive]} />
-        <View style={styles.paginationDot} />
-      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 24,
-    marginBottom: 16,
+    marginVertical: 16,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -153,19 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  pagination: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.border,
-    marginHorizontal: 3,
-  },
-  paginationDotActive: {
-    backgroundColor: colors.primary,
-  },
-}); 
+});
+
+export default RefundsCard; 

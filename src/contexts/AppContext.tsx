@@ -1,103 +1,135 @@
-import { User } from '@supabase/supabase-js';
+import { authService } from '@/features/auth/services/authService';
+import { edgeFunctionsProxy } from '@/services/api/EdgeFunctionsProxy';
+import { logger } from '@/utils/logger';
+import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
 import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
-import { authService } from '../features/auth/services/authService';
-import { setAccessTokenGetter } from '../services/api/EdgeFunctionsProxy';
 
-interface AuthContextType {
-  isAuthenticated: boolean;
+interface AppContextType {
   user: User | null;
-  isLoading: boolean;
   accessToken: string | null;
-  checkAuth: () => Promise<void>;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, pass: string) => Promise<any>;
   logout: () => Promise<void>;
-  setAccessToken: (token: string | null) => void;
+  checkAuth: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isAuthenticated = !!(user && accessToken);
+
+  const handleAuthChange = async (event: AuthChangeEvent, session: Session | null) => {
+    logger.auth(`Mudança de estado de autenticação detectada`, { event });
+    
+    const sessionUser = session?.user ?? null;
+    const sessionToken = session?.access_token ?? null;
+
+    // Otimização: Evitar atualizações de estado se os dados não mudaram.
+    if (user?.id === sessionUser?.id && accessToken === sessionToken) {
+      if (isLoading) setIsLoading(false);
+      return;
+    }
+
+    setUser(sessionUser);
+    setAccessToken(sessionToken);
+    
+    if (sessionUser && sessionToken) {
+        logger.system(`Login detectado via listener`, { email: sessionUser.email, userId: sessionUser.id });
+        edgeFunctionsProxy.setAccessTokenGetter(() => Promise.resolve(sessionToken));
+        edgeFunctionsProxy.setUserIdGetter(() => sessionUser.id);
+    } else if (event === 'SIGNED_OUT') {
+        logger.auth('Logout detectado via listener');
+        edgeFunctionsProxy.setAccessTokenGetter(() => Promise.resolve(null));
+        edgeFunctionsProxy.setUserIdGetter(() => null);
+    }
+    
+    if (isLoading) {
+        setIsLoading(false);
+    }
+  };
+
   const checkAuth = async () => {
+    setIsLoading(true);
+    logger.auth('Iniciando verificação de autenticação');
     try {
-      console.log('🔍 Verificando autenticação...');
-      const result = await authService.getUser();
-      
-      if (!result.success || !result.data) {
-        console.log('❌ Usuário não autenticado');
-        setUser(null);
-        setAccessToken(null);
-      } else {
-        console.log('✅ Usuário autenticado:', result.data.email);
-        setUser(result.data);
-      }
-    } catch (e) {
-      console.error('❌ Erro ao verificar autenticação:', e);
-      setUser(null);
-      setAccessToken(null);
+        const session = await authService.getSession();
+        await handleAuthChange('INITIAL_SESSION', session);
+    } catch (error) {
+        const e = error instanceof Error ? error : new Error(String(error));
+        logger.error('Erro durante a verificação inicial de autenticação.', e);
+        await handleAuthChange('SIGNED_OUT', null);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Força o logout no início para limpar qualquer sessão salva.
+    // Isso garante que o app sempre comece na tela de login.
+    authService.signOut();
+
+    // Configura o listener para responder a eventos futuros (login/logout manual).
+    const { data: { subscription } } = authService.onAuthStateChange(handleAuthChange);
+
+    return () => {
+      if (subscription) {
+        logger.system('Removendo listener de autenticação');
+        subscription.unsubscribe();
+      }
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    logger.auth('Iniciando processo de login', { email });
+    const { error } = await authService.signIn(email, password);
+    if (error) {
+        logger.error('Falha no login', error);
+        throw error;
     }
   };
 
   const logout = async () => {
-    try {
-      console.log('🚪 Fazendo logout...');
-      const { error } = await authService.signOut();
-      if (error) {
-        console.error('❌ Erro no logout Supabase:', error);
-      }
-      
-      setUser(null);
-      setAccessToken(null);
-      console.log('✅ Logout realizado com sucesso');
-    } catch (error) {
-      console.error('❌ Erro no logout:', error);
-      setUser(null);
-      setAccessToken(null);
-    }
+    const currentUserId = user?.id ?? null;
+    logger.auth('Iniciando logout', { userId: currentUserId });
+    await authService.signOut();
   };
 
-  // Configurar o getter do access_token para o EdgeFunctionsProxy
   useEffect(() => {
-    setAccessTokenGetter(() => accessToken);
-  }, [accessToken]);
-  
-  useEffect(() => {
-    console.log('🎯 AuthProvider inicializado - verificando sessão');
-    checkAuth();
-  }, []);
-
-  const isAuthenticated = !!user && !!accessToken;
-
-  console.log('📱 Estado de autenticação:', {
-    isAuthenticated,
-    hasUser: !!user,
-    hasToken: !!accessToken,
-    isLoading
-  });
+    logger.auth('Estado de autenticação alterado', {
+      isAuthenticated,
+      hasUser: !!user,
+      hasToken: !!accessToken,
+      isLoading,
+      userId: user?.id
+    });
+  }, [isAuthenticated, user, accessToken, isLoading]);
 
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user, 
-      isLoading, 
-      accessToken,
-      checkAuth, 
-      logout,
-      setAccessToken
-    }}>
+    <AppContext.Provider
+      value={{
+        user,
+        accessToken,
+        isAuthenticated,
+        isLoading,
+        login,
+        logout,
+        checkAuth,
+      }}
+    >
       {children}
-    </AuthContext.Provider>
+    </AppContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+export const useAppContext = (): AppContextType => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext deve ser usado dentro de um AppProvider');
   }
   return context;
 }; 

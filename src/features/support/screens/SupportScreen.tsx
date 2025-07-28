@@ -15,21 +15,22 @@ import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
-import { Ticket, supportTicketService } from '../services/supportTicketService';
+import { useAppContext } from '../../../contexts/AppContext';
+import { supportTicketService } from '../services/supportTicketService';
+import { Ticket } from '../types';
 
 export default function SupportScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+      const { user } = useAppContext();
   
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,23 +39,16 @@ export default function SupportScreen() {
 
   const loadTickets = async () => {
     setLoading(true);
+    setError(null);
     try {
-      setError(null);
       console.log('🔄 Carregando tickets...');
-      
-      const response = await supportTicketService.listTickets();
-      
-      if (response.success) {
-        setTickets(response.data?.tickets || []);
-        console.log(`✅ ${response.data?.tickets?.length || 0} tickets carregados`);
-      } else {
-        setError('Erro ao carregar tickets');
-        console.error('❌ Erro ao carregar tickets: Formato de dados inesperado', response);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setError(errorMessage);
-      console.error('❌ Erro ao carregar tickets:', errorMessage);
+      const response = await supportTicketService.getTickets();
+      // A resposta agora é o próprio array de tickets ou lança um erro.
+      setTickets(response.data || []);
+      console.log(`✅ ${response.data?.length || 0} tickets carregados`);
+    } catch (e: any) {
+      setError(e.message || 'Erro ao carregar tickets');
+      console.error('❌ Erro ao carregar tickets:', e);
     } finally {
       setLoading(false);
     }

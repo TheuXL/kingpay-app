@@ -10,7 +10,7 @@ import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } f
 
 export default function AccountScreen() {
     const { company, config, reserve, documents, isLoading, error } = useCompanyData();
-    const { logout, loading: isLoggingOut } = useAuthentication();
+    const { logout, isLoading: isLoggingOut } = useAuthentication();
 
     const handleLogout = async () => {
         await logout();

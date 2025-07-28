@@ -1,26 +1,86 @@
-import { useHomeData } from '@/features/home/hooks/useHomeData';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  ScrollView,
+  ActivityIndicator,
+  Text,
+  View,
+  SafeAreaView,
+  StyleSheet,
+  RefreshControl,
+} from 'react-native';
+import {
+  getFinancialSummary,
+  getDashboardData,
+  getChartData,
+} from '@/features/dashboard/services/dashboardService';
+import { useUserData } from '@/contexts/UserDataContext';
+import { logger } from '@/utils/logger';
 import { colors } from '@/theme/colors';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  WhitelabelFinancial,
+  DashboardData,
+  ChartDataPoint,
+} from '@/types/dashboard';
 
-import { SalesChartCard } from '@/components/dashboard/SalesChartCard';
-import DashboardCarousel from '@/components/home/DashboardCarousel';
+// Importe todos os seus componentes de UI aqui
 import HeaderUser from '@/components/home/HeaderUser';
-import JourneyCard from '@/components/home/JourneyCard';
-import QuickActions from '@/components/home/QuickActions';
 import SaldoCard from '@/components/home/SaldoCard';
-import SalesAnalysisCard from '@/components/home/SalesAnalysisCard'; // Importando o novo card
-import SalesMetricsCard from '@/components/home/SalesMetricsCard'; // Importando o card de grid
+import QuickActions from '@/components/home/QuickActions';
+import JourneyCard from '@/components/home/JourneyCard';
+import SalesSummary from '@/components/home/SalesSummary';
+import RefundsCard from '@/components/home/RefundsCard';
+import SalesMetricsCard from '@/components/home/SalesMetricsCard';
 
 export default function HomeScreen() {
-  const { user, financialSummary, chartData, additionalInfo, isLoading, error } = useHomeData();
-  const router = useRouter();
-  const [selectedPeriod, setSelectedPeriod] = useState("30 dias");
+  const { userProfile, company } = useUserData();
+  const [financialSummary, setFinancialSummary] = useState<WhitelabelFinancial | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadHomeScreenData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      logger.system('HomeScreen', 'Iniciando carregamento de dados da Home');
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+      const startDateString = startDate.toISOString().split('T')[0];
+      const endDateString = endDate.toISOString().split('T')[0];
+
+      // Busca todos os dados em paralelo
+      const [financialRes, dashboardRes, chartRes] = await Promise.all([
+        getFinancialSummary(),
+        getDashboardData(startDateString, endDateString),
+        getChartData(startDateString, endDateString),
+      ]);
+
+      if (financialRes.success && financialRes.data) setFinancialSummary(financialRes.data);
+      if (dashboardRes.success && dashboardRes.data) setDashboardData(dashboardRes.data);
+      if (chartRes.success && chartRes.data) setChartData(chartRes.data);
+
+      logger.success('HomeScreen', 'Dados da Home carregados com sucesso');
+    } catch (e: any) {
+      setError(e.message);
+      logger.error('HomeScreen', 'Erro ao carregar dados da Home:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHomeScreenData();
+  }, [loadHomeScreenData]);
+
+  const userName = userProfile?.fullname || 'Usuário';
+  const userPhoto = company?.logo_url;
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -30,107 +90,68 @@ export default function HomeScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.centered}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>
+            Ocorreu um erro ao carregar os dados.
+          </Text>
+          <Text style={styles.errorDetail}>{error}</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // Dados para o card de Análise de Vendas
-  const salesAnalysisData = {
-    sales: financialSummary?.sumPaid || 0,
-    pending: financialSummary?.sumPending || 0,
-    refunds: financialSummary?.sumRefunded || 0,
-    total: (financialSummary?.sumPaid || 0) + (financialSummary?.sumPending || 0)
-  };
-
-  // Dados para os cards de Métricas de Vendas (Grid)
-  const salesMetricsData = {
-    chargeback: financialSummary?.taxaChargeback || 0,
-    pixSales: financialSummary?.sumPixPaid || 0,
-    boletoSales: financialSummary?.sumBoletoPaid || 0,
-  };
-
-  const handlePeriodChange = () => {
-    console.log('Mudando período...');
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+    <SafeAreaView style={styles.safeArea}>
+      <HeaderUser userName={userName} userPhoto={userPhoto} />
+      <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={loadHomeScreenData} />
+        }
       >
-        <HeaderUser
-          userName={user?.user_metadata?.full_name || "Gabriel"}
-          onPress={() => console.log('Avatar pressionado')}
-        />
-
         <SaldoCard
-          saldo={financialSummary?.sumPaid || 0}
-          onAntecipar={() => router.push('/financial/anticipations')}
+          balance={financialSummary?.total_balances?.total_balance || 0}
         />
-        
         <QuickActions />
-
-        <JourneyCard onPress={() => router.push('/jornada')} />
-
-        <Text style={styles.sectionTitle}>Resumo de vendas</Text>
-        
-        <SalesChartCard data={chartData} title="Gráfico de Receita" />
-        
-        <SalesAnalysisCard 
-          data={salesAnalysisData}
-          title="Análise de Vendas"
+        <JourneyCard />
+        <SalesSummary
+          chartData={chartData || []}
+          dashboardData={dashboardData}
         />
-
-        <DashboardCarousel 
-          data={{ ...additionalInfo, ...financialSummary }} 
-        />
-        
-        <SalesMetricsCard 
-          data={salesMetricsData}
-          onPeriodChange={handlePeriodChange}
-          period={selectedPeriod}
-        />
-        
+        <RefundsCard dashboardData={dashboardData} />
+        <SalesMetricsCard dashboardData={dashboardData} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#EAF1FB', 
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 24,
-    gap: 24,
+    backgroundColor: colors.white,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#EAF1FB',
-  },
-  errorText: {
-    color: colors.danger,
-    fontSize: 16,
-    textAlign: 'center',
     padding: 20,
   },
-  sectionTitle: {
-    fontSize: 20,
+  errorText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
-    marginTop: 8, // Margem superior generosa
+    color: colors.danger,
+    textAlign: 'center',
+  },
+  errorDetail: {
+    fontSize: 14,
+    color: colors.gray,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
 }); 

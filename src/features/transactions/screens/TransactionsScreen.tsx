@@ -21,7 +21,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 import { formatCurrency } from '../../../utils/currency';
 import { getTransactionHistory } from '../services';
 // ✅ IMPORTAR UTILITÁRIOS DE VALIDAÇÃO DE TEXTO
@@ -100,7 +100,7 @@ const TransactionItem = ({ item }: { item: TransactionData }) => {
 };
 
 export const TransactionsScreen: React.FC = () => {
-  const { user } = useAuth();
+      const { user } = useAppContext();
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<TransactionData[]>([]);
   const [loading, setLoading] = useState(false);

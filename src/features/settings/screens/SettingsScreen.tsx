@@ -10,7 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 
 // Interfaces simplificadas para o propósito da refatoração
 interface SettingsItem {
@@ -31,7 +31,7 @@ interface SettingsSection {
 }
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+      const { user, logout } = useAppContext();
   const router = useRouter();
 
   const handleLogout = async () => {

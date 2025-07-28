@@ -23,20 +23,20 @@ const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
 
   // Extrai os dados necessários para cada card
   const refundsData = {
-    refunds: data.refunds,
-    chargebacks: data.chargebacks,
-    // ... outros dados de estorno se houver
+    sumRefunded: data.sumRefunded || 0,
+    sumChargeback: data.sumChargeback || 0,
+    totalRefunds: (data.sumRefunded || 0) + (data.sumChargeback || 0),
   };
 
   const paymentMethodsData = data.paymentMethods;
   const totalSalesData = data.totalSales;
   const approvalRateData = data.approvalRates;
 
-  const cards = [
-    <RefundsCard key="refunds" data={refundsData} />,
-    <PaymentMethodsCard key="payment" data={paymentMethodsData} />,
-    <TotalSalesCard key="sales" data={totalSalesData} />,
-    <ApprovalRateCard key="approval" data={approvalRateData} />,
+  const cardData = [
+    { type: 'refunds', data: refundsData },
+    { type: 'payment', data: paymentMethodsData },
+    { type: 'sales', data: totalSalesData },
+    { type: 'approval', data: approvalRateData },
   ];
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -59,14 +59,17 @@ const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
         contentOffset={{ x: -SPACING, y: 0 }}
         contentContainerStyle={styles.carousel}
       >
-        {cards.map((card, index) => (
+        {cardData.map((item, index) => (
           <View key={index} style={styles.cardContainer}>
-            {card}
+            {item.type === 'refunds' && <RefundsCard data={item.data} />}
+            {item.type === 'payment' && <PaymentMethodsCard data={item.data} />}
+            {item.type === 'sales' && <TotalSalesCard data={item.data} />}
+            {item.type === 'approval' && <ApprovalRateCard data={item.data} />}
           </View>
         ))}
       </ScrollView>
       <View style={styles.dotsContainer}>
-        {cards.map((_, index) => (
+        {cardData.map((_, index) => (
           <View
             key={index}
             style={[styles.dot, activeIndex === index ? styles.dotActive : {}]}

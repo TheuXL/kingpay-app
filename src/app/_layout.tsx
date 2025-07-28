@@ -1,75 +1,74 @@
+import { AppProvider, useAppContext } from '@/contexts/AppContext';
+import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { AuthProvider, useAuth } from '../contexts/AppContext';
+import { useEffect } from 'react';
 
-// Componente para gerenciar o estado de loading e navegação
-const AppLayout = () => {
-  const { isLoading, isAuthenticated } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-
-  useEffect(() => {
-    // Evita a execução enquanto os dados de autenticação estão carregando.
-    if (isLoading) {
-      console.log('⏳ Aguardando carregamento da autenticação...');
-      return;
-    }
-
-    const inAppGroup = segments[0] === '(app)';
-    const inAuthGroup = segments[0] === '(auth)';
-
-    console.log('🧭 Navegação:', {
-      isAuthenticated,
-      inAppGroup,
-      inAuthGroup,
-      currentSegment: segments[0]
-    });
-
-    // Se o usuário está autenticado mas não está no grupo de rotas do app,
-    // redireciona para o dashboard.
-    if (isAuthenticated && !inAppGroup) {
-      console.log('✅ Usuário autenticado - redirecionando para app');
-      router.replace('/(app)');
-    } 
-    // Se o usuário não está autenticado mas ainda está no grupo de rotas do app,
-    // redireciona para a tela de login.
-    else if (!isAuthenticated && inAppGroup) {
-      console.log('❌ Usuário não autenticado - redirecionando para login');
-      router.replace('/login');
-    }
-    // Se o usuário não está autenticado e não está no grupo de auth,
-    // redireciona para login
-    else if (!isAuthenticated && !inAuthGroup) {
-      console.log('❌ Usuário não autenticado - redirecionando para login');
-      router.replace('/login');
-    }
-  }, [isLoading, isAuthenticated, segments]);
-
-  // Mostrar loading enquanto verifica autenticação
-  if (isLoading) {
-    return null; // Ou um componente de loading
-  }
-
-  // O Stack é renderizado incondicionalmente. O useEffect cuida do redirecionamento.
-  // Isso evita que a árvore de componentes seja desmontada e remontada.
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
-      <Stack.Screen name="index" />
-    </Stack>
-  );
-};
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    // Adicione suas fontes aqui se tiver
+    // 'SpaceMono': require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
+  // Expo Router usa Error Boundaries para capturar erros na fase de renderização.
+  // Você pode querer usar um componente de erro personalizado aqui.
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <AppLayout />
-      </AuthProvider>
-    </GestureHandlerRootView>
+      <AppProvider>
+        <RootLayoutNav />
+      </AppProvider>
+  );
+}
+
+function RootLayoutNav() {
+  const { isAuthenticated, isLoading } = useAppContext();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return; // Aguarda o fim do carregamento
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (isAuthenticated && !inAuthGroup) {
+      // Se autenticado e não estiver no grupo (app), redireciona para a home
+       router.replace('/(app)');
+    } else if (!isAuthenticated) {
+       // Se não estiver autenticado, redireciona para o login
+       router.replace('/login');
+    }
+  }, [isAuthenticated, isLoading, segments]);
+
+  if (isLoading) {
+    return null; // ou um componente de loading global
+  }
+
+  return (
+    <>
+      <StatusBar style="auto" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(app)" />
+        <Stack.Screen name="login" />
+        {/* As telas de register e forgot-password devem estar dentro do grupo (auth) */}
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    </>
   );
 } 

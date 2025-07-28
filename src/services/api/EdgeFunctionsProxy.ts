@@ -8,187 +8,98 @@
  * - Comunicação direta com Supabase
  */
 
-import { ENV } from '../../config/env';
-import { supabase } from '../../lib/supabase';
-import type { ApiResponse } from '../../types/api';
+import { ENV } from '@/config/env';
+import { logger } from '@/utils/logger';
 
-export type { ApiResponse };
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string | null;
+  status?: number;
+}
 
-// Função para obter o access_token do contexto
-let getAccessToken: (() => string | null) | null = null;
+class EdgeFunctionsProxy {
+  private getAccessToken: (() => Promise<string | null>) | null = null;
+  private getUserId: (() => string | null) | null = null;
+  private getApiKey: (() => string | null) | null = null;
 
-export const setAccessTokenGetter = (getter: () => string | null) => {
-  getAccessToken = getter;
-};
-
-export class EdgeFunctionsProxy {
-
-  constructor() {
-    // Configurações agora vêm do cliente centralizado Supabase
+  public setAccessTokenGetter(getter: () => Promise<string | null>) {
+    this.getAccessToken = getter;
+    logger.system('AccessTokenGetter configurado no EdgeFunctionsProxy');
   }
 
-  /**
-   * 🚀 Fazer requisição direta ao Edge Function
-   */
-  async request<T>(
+  public setUserIdGetter(getter: () => string | null) {
+    this.getUserId = getter;
+  }
+
+  public setApiKeyGetter(getter: () => string | null) {
+    this.getApiKey = getter;
+  }
+
+  public async invoke(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
-    body?: any,
-    params?: Record<string, string>
-  ): Promise<ApiResponse<T>> {
-    try {
-      // Obter access_token do contexto de autenticação
-      let accessToken: string | null = null;
-      
-      if (getAccessToken) {
-        accessToken = getAccessToken();
-      } else {
-        // Fallback para sessão do Supabase
-        const { data: { session } } = await supabase.auth.getSession();
-        accessToken = session?.access_token || null;
-      }
+    method: 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE',
+    body?: any
+  ) {
+    const startTime = Date.now();
+    const userId = this.getUserId ? this.getUserId() : undefined;
+    const requestId = logger.apiRequest(method, endpoint, {}, body, userId || undefined);
 
-      // Construir URL base correta
-      const isAuthEndpoint = endpoint.startsWith('token');
-      const baseUrl = isAuthEndpoint ? `${ENV.SUPABASE_URL}/auth/v1/` : `${ENV.SUPABASE_URL}/functions/v1/`;
-      let url = `${baseUrl}${endpoint}`;
-      
-      // Adicionar query parameters para GET
-      if (params && Object.keys(params).length > 0 && method === 'GET') {
-        const queryString = new URLSearchParams(params).toString();
-        url = `${url}?${queryString}`;
-      }
-
-      // Headers essenciais
-      const headers: Record<string, string> = {
-        'apikey': ENV.SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-      };
-
-      // Adicionar Authorization se autenticado
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-        console.log('🔑 Usando access_token para autenticação');
-      } else {
-        console.log('⚠️ Nenhum access_token disponível');
-      }
-
-      // Configurar requisição
-      const requestOptions: RequestInit = {
-        method,
-        headers,
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'no-cache',
-      };
-
-      // Adicionar body se necessário
-      if (body && method !== 'GET') {
-        requestOptions.body = JSON.stringify(body);
-      }
-
-      console.log(`\n\n--- 🚀 [API Request] 🚀 ---`);
-      console.log(`[${method}] ${url}`);
-      if (body && method !== 'GET') {
-        console.log(`[Payload]:`, JSON.stringify(body, null, 2));
-      }
-      console.log(`[Auth]: ${accessToken ? 'Bearer Token' : 'No Auth'}`);
-      console.log(`-------------------------\n`);
-
-      // Fazer requisição
-      const response = await fetch(url, requestOptions);
-
-      // Verificar resposta
-      if (!response.ok) {
-        const errorText = await response.text();
-        
-        console.log(`\n\n--- ❌ [API Error] ❌ ---`);
-        console.log(`[${method}] ${url} - Status: ${response.status}`);
-        try {
-          // Tenta formatar o erro como JSON para melhor leitura
-          console.log(`[Error Body]:`, JSON.stringify(JSON.parse(errorText), null, 2));
-        } catch {
-          console.log(`[Error Body]:`, errorText);
-        }
-        console.log(`-----------------------\n`);
-
-        return {
-          success: false,
-          error: `HTTP ${response.status}: ${errorText || response.statusText}`,
-          status: response.status
-        };
-      }
-
-      // Processar dados da resposta
-      const contentType = response.headers.get('content-type');
-      let data: any;
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        const textData = await response.text();
-        data = textData ? { message: textData } : {};
-      }
-
-      console.log(`\n\n--- ✅ [API Response] ✅ ---`);
-      console.log(`[${method}] ${url} - Status: ${response.status}`);
-      console.log(`[Data]:`, JSON.stringify(data, null, 2));
-      console.log(`--------------------------\n`);
-
-      return {
-        success: true,
-        data,
-        status: response.status
-      };
-
-    } catch (error) {
-      const errorText = error instanceof Error ? error.message : 'Erro de conexão';
-      console.log(`\n\n--- ❌ [Network Error] ❌ ---`);
-      console.log(`[${method}] /${endpoint}`);
-      console.log(`[Error]: ${errorText}`);
-      console.log(`---------------------------\n`);
-      
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Erro de conexão',
-        status: 500
-      };
+    const accessToken = this.getAccessToken ? await this.getAccessToken() : null;
+    const apiKey = this.getApiKey ? this.getApiKey() : null;
+    
+    let url: string;
+    if (endpoint.startsWith('auth/')) {
+        url = `${ENV.SUPABASE_URL}/${endpoint}`;
+    } else {
+        url = `${ENV.SUPABASE_URL}/functions/v1/${endpoint}`;
     }
-  }
 
-  /**
-   * 🔄 GET Request
-   */
-  async get<T>(endpoint: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, 'GET', undefined, params);
-  }
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
 
-  /**
-   * 📤 POST Request
-   */
-  async post<T>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, 'POST', body);
-  }
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+    // A apikey é geralmente para o Supabase Auth, não para as functions
+    if (apiKey && endpoint.startsWith('auth/')) {
+      headers['apikey'] = apiKey;
+    }
 
-  /**
-   * 🔄 PUT Request
-   */
-  async put<T>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, 'PUT', body);
-  }
+    const options: RequestInit = {
+      method,
+      headers,
+    };
 
-  /**
-   * 🔧 PATCH Request
-   */
-  async patch<T>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, 'PATCH', body);
-  }
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+    
+    try {
+      const response = await fetch(url, options);
+      const duration = Date.now() - startTime;
+      const responseBody = await response.text();
+      const data = responseBody ? JSON.parse(responseBody) : null;
 
-  /**
-   * 🗑️ DELETE Request
-   */
-  async delete<T>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, 'DELETE', body);
+      logger.apiResponse(requestId, response.status, data, duration, userId || undefined);
+
+      if (!response.ok) {
+        throw new Error(data?.message || `Erro na requisição para ${endpoint}`);
+      }
+      
+      return data;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      const e = error instanceof Error ? error : new Error(String(error));
+      logger.error(`Falha na requisição para ${endpoint}`, {
+          requestId,
+          duration,
+          error: e.message,
+          stack: e.stack,
+      }, userId || undefined);
+      throw error;
+    }
   }
 }
 

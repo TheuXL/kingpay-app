@@ -1,13 +1,13 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useAuth } from '../../contexts/AppContext';
+import { useAppContext } from '../../contexts/AppContext';
 
 
 export const UserHeader = ({
   backgroundColor = '#ffffff'
 }) => {
-  const { user } = useAuth();
+  const { user } = useAppContext();
   const router = useRouter();
 
   const handlePress = () => {

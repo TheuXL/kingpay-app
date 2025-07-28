@@ -98,9 +98,15 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@react-native|react-native|expo.*|@expo.*|@unimodules/.*|@supabase/.*|isows))"
+    ],
     "setupFilesAfterEnv": [
       "@testing-library/jest-native/extend-expect"
     ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js"
+    },
     "testMatch": [
       "**/__tests__/**/*.(ts|tsx|js)",
       "**/*.(test|spec).(ts|tsx|js)"

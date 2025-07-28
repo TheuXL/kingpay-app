@@ -1,5 +1,11 @@
-import { supabase } from '@/lib/supabase';
-import { SignUpData } from '../types';
+import { supabase } from '@/config/supabaseClient';
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+
+interface SignUpData {
+  email: string;
+  password: string;
+  fullName?: string;
+}
 
 /**
  * Módulo: Autenticação de Usuário
@@ -13,22 +19,43 @@ class AuthService {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       
-      if (error) {
-        console.error('❌ Erro ao buscar usuário:', error);
-        return { success: false, error: 'Não foi possível obter os dados do usuário.', data: null };
+      if (error || !user) {
+        return null;
       }
       
-      if (!user) {
-        console.warn('⚠️ Nenhum usuário logado encontrado');
-        return { success: false, error: 'Nenhum usuário logado encontrado.', data: null };
-      }
-      
-      return { success: true, data: user, error: null };
+      return user;
       
     } catch (error: any) {
       console.error('❌ Erro inesperado ao buscar usuário:', error);
-      return { success: false, error: error.message || 'Erro inesperado.', data: null };
+      return null;
     }
+  }
+
+  /**
+   * Obtém a sessão atual do Supabase.
+   */
+  async getSession() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('❌ Erro ao buscar sessão:', error);
+        return null;
+      }
+      
+      return session;
+      
+    } catch (error: any) {
+      console.error('❌ Erro inesperado ao buscar sessão:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Listener para mudanças no estado de autenticação.
+   */
+  onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void) {
+    return supabase.auth.onAuthStateChange(callback);
   }
 
   /**

@@ -1,85 +1,60 @@
-import { supabase } from '../../../lib/supabase';
+import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
+
+export interface BaaSProvider {
+  id: string;
+  name: string;
+  ativo: boolean;
+  // Outros campos relevantes
+}
+
+export interface BaaSTaxes {
+  fee: number;
+  // Outros campos de taxas
+}
 
 /**
  * Módulo: BaaS (Banking as a Service) - Admin
- * Endpoints da lista, correspondendo a #46-50 do Endpoits.md
  */
 export class BaasService {
 
-  /**
-   * Endpoint #46: Listar Provedores BaaS (GET /functions/v1/baas)
-   */
-  async getBaasProviders() {
-    try {
-      const { data, error } = await supabase.functions.invoke('baas', { method: 'GET' });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Erro ao listar provedores BaaS:', error);
-      throw error;
+  async getBaasProviders(): Promise<BaaSProvider[]> {
+    const response = await edgeFunctionsProxy.invoke('baas', 'GET');
+    if (response.success && response.data?.Baas) {
+      return response.data.Baas as BaaSProvider[];
     }
+    throw new Error(response.error || 'Erro ao listar provedores BaaS.');
   }
 
-  /**
-   * Endpoint #47: Buscar Provedor BaaS por ID (GET /functions/v1/baas/:id)
-   */
-  async getBaasProviderById(id: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`baas/${id}`, { method: 'GET' });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error(`Erro ao buscar provedor BaaS ${id}:`, error);
-      throw error;
+  async getBaasProviderById(id: string): Promise<BaaSProvider> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}`, 'GET');
+    if (response.success && response.data?.Baas) {
+      return response.data.Baas as BaaSProvider;
     }
+    throw new Error(response.error || `Erro ao buscar provedor BaaS ${id}.`);
   }
 
-  /**
-   * Endpoint #48: Consultar Taxas do BaaS (GET /functions/v1/baas/:id/taxas)
-   */
-  async getBaasProviderTaxes(id: string) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`baas/${id}/taxas`, { method: 'GET' });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error(`Erro ao buscar taxas do BaaS ${id}:`, error);
-      throw error;
+  async getBaasProviderTaxes(id: string): Promise<BaaSTaxes> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/taxas`, 'GET');
+    if (response.success && response.data?.taxas) {
+      return response.data.taxas as BaaSTaxes;
     }
+    throw new Error(response.error || `Erro ao buscar taxas do BaaS ${id}.`);
   }
 
-  /**
-   * Endpoint #49: Ativar/Desativar BaaS (PATCH /functions/v1/baas/:id/active)
-   */
-  async setBaasProviderStatus(id: string, isActive: boolean) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`baas/${id}/active`, {
-        method: 'PATCH',
-        body: { active: isActive },
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error(`Erro ao ativar/desativar BaaS ${id}:`, error);
-      throw error;
+  async setBaasProviderStatus(id: string, isActive: boolean): Promise<any> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/active`, 'PATCH', { active: isActive });
+    if (response.success) {
+      return response.data;
     }
+    throw new Error(response.error || `Erro ao ativar/desativar BaaS ${id}.`);
   }
 
-  /**
-   * Endpoint #50: Alterar Taxa do BaaS (PATCH /functions/v1/baas/:id/taxa)
-   */
-  async updateBaasProviderTax(id: string, taxData: any) {
-    try {
-      const { data, error } = await supabase.functions.invoke(`baas/${id}/taxa`, {
-        method: 'PATCH',
-        body: taxData,
-      });
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error(`Erro ao atualizar taxa do BaaS ${id}:`, error);
-      throw error;
+  async updateBaasProviderTax(id: string, taxData: { fee: number }): Promise<any> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/taxa`, 'PATCH', taxData);
+    if (response.success) {
+      return response.data;
     }
+    throw new Error(response.error || `Erro ao atualizar taxa do BaaS ${id}.`);
   }
 }
 
