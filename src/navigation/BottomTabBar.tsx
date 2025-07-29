@@ -1,8 +1,7 @@
-import { colors } from '@/theme/colors';
 import { useRouter, useSegments } from 'expo-router';
 import { Home, Trophy, User } from 'lucide-react-native';
 import React from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const tabRoutes = [
     { name: 'Home', route: '/', icon: Home },
@@ -13,10 +12,11 @@ const tabRoutes = [
 const BottomTabBar = () => {
     const router = useRouter();
     const segments = useSegments();
-    const currentRoute = `/${segments[segments.length - 1] || ''}`;
+    // Normaliza a rota atual para lidar com a rota raiz
+    const currentRoute = `/${segments.join('/') || ''}`.replace(/\/index$/, '/');
 
     const isRouteActive = (route: string) => {
-        if (route === '/') return currentRoute === '/' || currentRoute === '/index';
+        if (route === '/') return currentRoute === '/';
         return currentRoute.startsWith(route);
     };
 
@@ -25,14 +25,17 @@ const BottomTabBar = () => {
             <View style={styles.tabBar}>
                 {tabRoutes.map((tab) => {
                     const isActive = isRouteActive(tab.route);
+                    const Icon = tab.icon;
                     return (
                         <TouchableOpacity
                             key={tab.name}
-                            style={styles.tabItem}
+                            style={[styles.tabItem, isActive && styles.activeTabItem]}
                             onPress={() => router.push(tab.route)}
                         >
-                            <tab.icon color={isActive ? colors.primary : colors.textSecondary} size={24} />
-                            {isActive && <Text style={styles.activeTabText}>{tab.name}</Text>}
+                            <Icon color={isActive ? '#FFFFFF' : '#7B7BFF'} size={24} />
+                            <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                                {tab.name}
+                            </Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -44,45 +47,50 @@ const BottomTabBar = () => {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'transparent',
+        bottom: 10, // Adiciona um respiro na parte inferior
+        left: 16,
+        right: 16,
         alignItems: 'center',
     },
     tabBar: {
         flexDirection: 'row',
-        backgroundColor: colors.card,
-        borderRadius: 32,
-        margin: 20,
-        paddingHorizontal: 20,
-        paddingVertical: 15,
+        backgroundColor: '#FFFFFF', // Fundo branco
+        borderRadius: 99, // Cantos totalmente arredondados
+        paddingHorizontal: 12,
+        paddingVertical: 12,
         justifyContent: 'space-around',
         alignItems: 'center',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: -5 },
-                shadowOpacity: 0.05,
-                shadowRadius: 10,
-            },
-            android: {
-                elevation: 10,
-            },
-        }),
+        width: '100%',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.08,
+        shadowRadius: 16,
+        elevation: 10,
     },
     tabItem: {
-        alignItems: 'center',
+        flex: 1,
         flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         paddingHorizontal: 12,
         paddingVertical: 8,
-        borderRadius: 20,
+        borderRadius: 99,
+        gap: 8, // Espaço entre ícone e texto
+    },
+    activeTabItem: {
+        backgroundColor: '#1A1AFF', // Fundo azul para o item ativo
+    },
+    tabText: {
+        color: '#7B7BFF', // Azul claro para texto inativo
+        fontSize: 14,
+        fontWeight: '500',
     },
     activeTabText: {
-        color: colors.primary,
+        color: '#FFFFFF', // Texto branco para o item ativo
         fontWeight: 'bold',
-        marginLeft: 8,
-        fontSize: 14,
     },
 });
 

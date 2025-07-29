@@ -1,15 +1,15 @@
 import { useUserData } from '@/contexts/UserDataContext';
-import { useHomeData } from '@/features/home/hooks/useHomeData';
+// import { useHomeData } from '../hooks/useHomeData'; // Comentado temporariamente
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { DashboardCarousel } from '../../../components/home/DashboardCarousel';
+import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import HeaderUser from '../../../components/home/HeaderUser';
-import SalesChart from '../../../components/home/SalesChart';
-import TotalSalesCard from '../../../components/home/TotalSalesCard';
-// import TopListCard from '../../../components/dashboard/TopListCard'; // Removido temporariamente
+import QuickActions from '../../../components/home/QuickActions';
+import SaldoCard from '../../../components/home/SaldoCard';
 
 const HomeScreen = () => {
   const { userProfile, company } = useUserData();
+  /*
   const {
     financialSummary,
     chartData,
@@ -17,71 +17,88 @@ const HomeScreen = () => {
     isLoading,
     error,
     refreshData,
-    // topSellers, // Removido temporariamente
   } = useHomeData();
+  */
+  // Mock data para o design
+  const isLoading = false;
+  const error = null;
+  const refreshData = () => {};
+
 
   const userName = useMemo(() => {
-    if (userProfile?.fullname) return userProfile.fullname;
+    if (userProfile?.fullname) return userProfile.fullname.split(' ')[0];
     if (userProfile?.email) return userProfile.email.split('@')[0];
     return 'Usuário';
   }, [userProfile]);
 
+  /* Comentado para focar no design
   if (isLoading && !financialSummary) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
+      <LinearGradient colors={['#EAF1FB', '#FFFFFF']} style={styles.flexOne}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#1A1AFF" />
+        </View>
+      </LinearGradient>
     );
   }
+  */
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <HeaderUser
-          userName={userName}
-          userPhoto={company?.logo_url || undefined}
-        />
-        <View style={styles.centered}>
-          <Text style={styles.errorText}>
-            Ocorreu um erro ao carregar os dados. Tente novamente.
-          </Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={['#EAF1FB', '#FFFFFF']} style={styles.flexOne}>
+        <SafeAreaView style={styles.flexOne}>
+          <View style={styles.content}>
+            <HeaderUser
+              userName={userName}
+              userPhoto={company?.logo_url || undefined}
+            />
+            <View style={styles.centered}>
+              <Text style={styles.errorText}>
+                Ocorreu um erro ao carregar os dados. Tente novamente.
+              </Text>
+            </View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
-  
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-       <HeaderUser
-          userName={userName}
-          userPhoto={company?.logo_url || undefined}
-        />
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refreshData} />
-        }
-      >
-        <DashboardCarousel />
+    <LinearGradient colors={['#EAF1FB', '#FFFFFF']} style={styles.flexOne}>
+      <SafeAreaView style={styles.flexOne}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isLoading} onRefresh={refreshData} tintColor="#1A1AFF" />
+          }
+        >
+          <HeaderUser
+            userName={userName}
+            userPhoto={company?.logo_url || undefined}
+          />
+          
+          <SaldoCard balance={138241.15} />
+          
+          <QuickActions />
 
-        {financialSummary && <TotalSalesCard summary={financialSummary} />}
-        {chartData && chartData.length > 0 && <SalesChart data={chartData} />}
-        {/* {topSellers && topSellers.length > 0 && (
-          <TopListCard title="Top Vendedores" items={topSellers} />
-        )} */}
+          {/* Placeholders for the new cards */}
+          <View style={styles.placeholderCard}><Text>JourneyCard</Text></View>
+          <View style={styles.placeholderCard}><Text>SalesChartCard</Text></View>
 
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
+  flexOne: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 24, // Espaçamento do topo
   },
   centered: {
     flex: 1,
@@ -90,15 +107,18 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: 'red',
+    color: '#FF647C',
     textAlign: 'center',
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
+  placeholderCard: {
+    height: 150,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 12,
+  }
 });
 
 export default HomeScreen; 

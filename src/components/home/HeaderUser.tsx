@@ -1,5 +1,4 @@
-import { colors } from '@/theme/colors';
-import { Feather } from '@expo/vector-icons';
+import { Eye, HelpCircle } from 'lucide-react-native';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -18,19 +17,21 @@ const HeaderUser: React.FC<HeaderUserProps> = ({ userName, userPhoto }) => {
           <Image source={{ uri: userPhoto }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarPlaceholderText}>
-              {getInitials(userName)}
-            </Text>
+            {/* O design não especifica iniciais, então deixamos o placeholder azul */}
           </View>
         )}
-        <Text style={styles.userName}>Olá, {userName}!</Text>
+        <View>
+          <Text style={styles.greetingText}>
+            Olá, <Text style={styles.userName}>{userName}!</Text>
+          </Text>
+        </View>
       </View>
       <View style={styles.icons}>
         <TouchableOpacity style={styles.iconButton}>
-          <Feather name='bell' size={24} color={colors.gray} />
+          <Eye size={24} color="#333333" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <Feather name='settings' size={24} color={colors.gray} />
+          <HelpCircle size={24} color="#333333" />
         </TouchableOpacity>
       </View>
     </View>
@@ -42,45 +43,52 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: colors.white,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12, // Cantos arredondados
+    marginBottom: 24, // Espaçamento inferior
+    // Sombra
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 5,
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22, // Circular
     marginRight: 12,
   },
   avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 12,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#1A1AFF', // Placeholder azul
   },
-  avatarPlaceholderText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+  greetingText: {
+    fontSize: 16,
+    color: '#6B6B6B', // Cinza escuro
   },
   userName: {
-    fontSize: 18,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: '#1A1AFF', // Azul vibrante
   },
   icons: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconButton: {
-    marginLeft: 16,
+    marginLeft: 20,
   },
 });
 

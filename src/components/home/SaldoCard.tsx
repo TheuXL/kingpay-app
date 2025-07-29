@@ -1,7 +1,5 @@
-import { colors } from '@/theme/colors';
-import { formatCurrency } from '@/utils/formatters';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowUp, ChevronRight } from 'lucide-react-native';
+import { ArrowRight, ArrowUp } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,83 +7,99 @@ interface SaldoCardProps {
   balance: number;
 }
 
+const formatCurrency = (value: number) => {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+};
+
 const SaldoCard: React.FC<SaldoCardProps> = ({ balance }) => {
   return (
-    <TouchableOpacity style={styles.cardContainer} activeOpacity={0.9}>
+    <View style={styles.cardShadow}>
       <LinearGradient
-        colors={['rgba(26, 26, 255, 0.85)', 'rgba(26, 26, 255, 1)']}
-        style={styles.gradient}
+        colors={['#2D3748', '#1A1AFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.container}
       >
         <View style={styles.header}>
-          <Text style={styles.label}>Saldo disponível</Text>
-          <ChevronRight color='#FFF' size={24} style={styles.chevronIcon} />
+          <Text style={styles.title}>Saldo disponível</Text>
+          <TouchableOpacity>
+            <ArrowRight size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
 
-        <Text style={styles.value}>{formatCurrency(balance)}</Text>
+        <Text style={styles.balance}>{formatCurrency(balance)}</Text>
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Antecipar</Text>
-          <ArrowUp color={colors.primary} size={20} />
+        <TouchableOpacity style={styles.anticipateButton}>
+          <ArrowUp size={16} color="#1A1AFF" />
+          <Text style={styles.anticipateButtonText}>Antecipar</Text>
         </TouchableOpacity>
       </LinearGradient>
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    borderRadius: 24,
-    overflow: 'hidden',
+  cardShadow: {
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 8,
-    marginVertical: 16,
+    marginBottom: 24, // Espaçamento da seção
   },
-  gradient: {
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    justifyContent: 'space-between',
-    minHeight: 180,
+  container: {
+    borderRadius: 16,
+    padding: 24,
+    overflow: 'hidden', // Garante que o gradiente respeite o border-radius
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
+    marginBottom: 8,
   },
-  label: {
-    color: colors.white,
+  title: {
     fontSize: 16,
-    opacity: 0.9,
+    color: '#FFFFFF',
+    fontWeight: '400',
   },
-  chevronIcon: {
-    opacity: 0.8,
-  },
-  value: {
-    color: colors.white,
-    fontSize: 36,
+  balance: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginVertical: 12,
-    textAlign: 'left',
-    width: '100%',
+    color: '#FFFFFF',
+    marginBottom: 24,
   },
-  button: {
+  anticipateButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 30,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    alignSelf: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start', // Para não ocupar a largura toda
+    // Sombra interna leve
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  buttonText: {
-    color: colors.primary,
+  anticipateButtonText: {
+    fontSize: 14,
     fontWeight: 'bold',
-    marginRight: 8,
-    fontSize: 16,
+    color: '#1A1AFF',
+    marginLeft: 8,
   },
 });
 

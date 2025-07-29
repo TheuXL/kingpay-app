@@ -1,38 +1,43 @@
-import { colors } from '@/theme/colors';
-import { useRouter } from 'expo-router';
-import { ArrowRightLeft, Link, Wallet2 } from 'lucide-react-native';
+import { ArrowRightLeft, Link, Wallet } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const ActionButton = ({
-  icon: Icon,
-  label,
-  route,
-}: {
-  icon: React.ElementType;
-  label: string;
-  route: string;
-}) => {
-  const router = useRouter();
-  return (
-    <TouchableOpacity
-      style={styles.actionButton}
-      onPress={() => router.push(route as `http${string}` | `/${string}`)}
-    >
-      <View style={styles.iconContainer}>
-        <Icon color={colors.primary} size={28} />
-      </View>
-      <Text style={styles.actionLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-};
+const actions = [
+  {
+    icon: Wallet,
+    label: 'Carteira',
+    onPress: () => console.log('Carteira Pressionado'),
+  },
+  {
+    icon: ArrowRightLeft,
+    label: 'Transações',
+    onPress: () => console.log('Transações Pressionado'),
+  },
+  {
+    icon: Link,
+    label: 'Link de Pag.',
+    onPress: () => console.log('Link Pressionado'),
+  },
+];
 
-const QuickActions: React.FC = () => {
+const QuickActions = () => {
   return (
     <View style={styles.container}>
-      <ActionButton icon={Wallet2} label='Carteira' route='/carteira' />
-      <ActionButton icon={ArrowRightLeft} label='Transações' route='/transactions' />
-      <ActionButton icon={Link} label='Link de Pag.' route='/links' />
+      {actions.map((action, index) => {
+        const Icon = action.icon;
+        return (
+          <TouchableOpacity
+            key={index}
+            style={styles.actionButton}
+            onPress={action.onPress}
+          >
+            <View style={styles.iconContainer}>
+              <Icon color="#1A1AFF" size={24} />
+            </View>
+            <Text style={styles.actionLabel}>{action.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };
@@ -41,32 +46,34 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'flex-start',
-    paddingVertical: 24,
+    alignItems: 'center',
+    marginVertical: 24,
   },
   actionButton: {
     alignItems: 'center',
-    maxWidth: 90,
   },
   iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32, // Circular
     backgroundColor: '#FFFFFF',
-    width: 68,
-    height: 68,
-    borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
+    // Sombra
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionLabel: {
-    color: '#3F3F46',
     fontSize: 14,
+    color: '#333333',
     fontWeight: '500',
-    textAlign: 'center',
   },
 });
 
