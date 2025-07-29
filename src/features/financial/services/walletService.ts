@@ -6,10 +6,10 @@ import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
 
 /**
  * Busca os dados da carteira do usuário (saldos).
- * Endpoint: GET /wallet
+ * Endpoint: GET /functions/v1/wallet
  */
-export const getWalletData = async (userId: string) => {
-    return edgeFunctionsProxy.get(`wallet?userId=${userId}`);
+export const getWalletData = async () => {
+    return edgeFunctionsProxy.invoke('wallet', 'GET');
 };
 
 /**
@@ -21,40 +21,49 @@ export const getFinancialData = async (startDate?: string, endDate?: string) => 
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     // O endpoint espera POST, mas os parâmetros vão na URL, o corpo pode ser vazio.
-    return edgeFunctionsProxy.post(`whitelabel-financeiro?${params.toString()}`, {});
+    return edgeFunctionsProxy.invoke(`whitelabel-financeiro?${params.toString()}`, 'POST', {});
 };
 
 /**
  * Busca o extrato da carteira de um usuário.
- * Endpoint: GET /extrato/:userId
+ * Endpoint: GET /functions/v1/extrato/:userId
  */
 export const getWalletStatement = async (userId: string, params?: { limit?: number; offset?: number }) => {
-    const queryParams: Record<string, string> = {};
-    if (params?.limit) queryParams['limit'] = String(params.limit);
-    if (params?.offset) queryParams['offset'] = String(params.offset);
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append('limit', String(params.limit));
+    if (params?.offset) queryParams.append('offset', String(params.offset));
     
-    return edgeFunctionsProxy.get(`extrato/${userId}`, queryParams);
+    const endpoint = `extrato/${userId}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return edgeFunctionsProxy.invoke(endpoint, 'GET');
 };
 
 /**
  * Busca o histórico de saques (transferências).
- * Endpoint: GET /saques
+ * Endpoint: GET /functions/v1/saques
  */
 export const getWithdrawals = async () => {
-  return edgeFunctionsProxy.get('saques');
+  return edgeFunctionsProxy.invoke('saques', 'GET');
+};
+
+/**
+ * Busca as antecipações.
+ * Endpoint: GET /functions/v1/antecipacoes/anticipations
+ */
+export const getAnticipations = async () => {
+    return edgeFunctionsProxy.invoke('antecipacoes/anticipations', 'GET');
 };
 
 /**
  * Busca as chaves PIX do usuário.
- * Endpoint: GET /pix-key
+ * Endpoint: GET /functions/v1/pix-key
  */
 export const getPixKeys = async () => {
-    return edgeFunctionsProxy.get('pix-key');
+    return edgeFunctionsProxy.invoke('pix-key', 'GET');
 };
 
 /**
  * Cria uma nova solicitação de saque (withdrawal).
- * API Endpoint: POST /withdrawals
+ * API Endpoint: POST /functions/v1/withdrawals
  */
 export const createWithdrawal = async (withdrawalData: {
   pixkeyid: string;
@@ -62,5 +71,5 @@ export const createWithdrawal = async (withdrawalData: {
   description: string;
   isPix: boolean;
 }) => {
-  return edgeFunctionsProxy.post('withdrawals', withdrawalData);
+  return edgeFunctionsProxy.invoke('withdrawals', 'POST', withdrawalData);
 }; 

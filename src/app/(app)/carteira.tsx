@@ -19,11 +19,11 @@ export default function WalletScreen() {
   const [activeTab, setActiveTab] = useState('extrato');
   const { financialSummary, walletStatement, isLoading, error, refetch } = useWalletData();
 
-  // Pega apenas as 3 últimas transações para o preview
-  const statementPreview = walletStatement.slice(0, 3);
+  // Pega apenas as 3 últimas transações para o preview (com proteção contra undefined)
+  const statementPreview = walletStatement?.slice(0, 3) || [];
 
   const renderContent = () => {
-    if (isLoading && activeTab === 'extrato' && walletStatement.length === 0) {
+    if (isLoading && activeTab === 'extrato' && (!walletStatement || walletStatement.length === 0)) {
         return <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }}/>;
     }
 

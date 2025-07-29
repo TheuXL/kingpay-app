@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 import * as walletService from '../services/walletService';
 
 // Adicionar tipos para os dados da carteira
@@ -24,7 +24,7 @@ interface Statement {
 }
 
 export const useWalletData = () => {
-    const { user } = useAuth();
+    const { user } = useAppContext();
     const [financialData, setFinancialData] = useState<FinancialData | null>(null);
     const [statement, setStatement] = useState<Statement[]>([]);
     const [anticipations, setAnticipations] = useState<any[]>([]);
@@ -91,13 +91,13 @@ export const useWalletData = () => {
     }, [fetchData]);
 
     return {
-        financialData,
-        statement,
+        financialSummary: financialData,
+        walletStatement: statement,
         anticipations,
         withdrawals,
         pixKeys,
-        loading,
+        isLoading: loading,
         error,
-        refresh: fetchData
+        refetch: fetchData
     };
 }; 

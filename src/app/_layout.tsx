@@ -46,13 +46,14 @@ function RootLayoutNav() {
     if (isLoading) return; // Aguarda o fim do carregamento
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inAppGroup = segments[0] === '(app)';
 
-    if (isAuthenticated && !inAuthGroup) {
-      // Se autenticado e não estiver no grupo (app), redireciona para a home
-       router.replace('/(app)');
-    } else if (!isAuthenticated) {
-       // Se não estiver autenticado, redireciona para o login
-       router.replace('/login');
+    if (isAuthenticated && inAuthGroup) {
+      // Se autenticado mas ainda na área de auth, redireciona para o app
+      router.replace('/(app)');
+    } else if (!isAuthenticated && !inAuthGroup) {
+       // Se não estiver autenticado e não estiver na área de auth, redireciona para o login
+       router.replace('/(auth)/login');
     }
   }, [isAuthenticated, isLoading, segments]);
 
@@ -65,8 +66,7 @@ function RootLayoutNav() {
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(app)" />
-        <Stack.Screen name="login" />
-        {/* As telas de register e forgot-password devem estar dentro do grupo (auth) */}
+        <Stack.Screen name="(auth)" />
         <Stack.Screen name="+not-found" />
       </Stack>
     </>

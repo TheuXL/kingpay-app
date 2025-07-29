@@ -27,7 +27,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 import {
     SupportTicket,
     TicketMessage,
@@ -37,7 +37,7 @@ import {
 export default function TicketDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user } = useAppContext();
   
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);

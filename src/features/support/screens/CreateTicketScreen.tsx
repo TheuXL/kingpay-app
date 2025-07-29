@@ -24,12 +24,12 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 import { supportTicketService } from '../services/supportTicketService';
 
 export default function CreateTicketScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAppContext();
   
   const [formData, setFormData] = useState({
     subject: '',

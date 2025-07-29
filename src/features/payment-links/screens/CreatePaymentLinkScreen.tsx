@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../../contexts/AppContext';
+import { useAppContext } from '../../../contexts/AppContext';
 
 export default function CreatePaymentLinkScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAppContext();
   
   const [formData, setFormData] = useState({
     name: '',

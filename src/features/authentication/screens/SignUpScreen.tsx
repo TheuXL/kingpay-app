@@ -11,7 +11,7 @@ export default function SignUpScreen() {
     const success = await signup(data.email, data.password, data.name);
     if (success) {
       Alert.alert('Sucesso!', 'Sua conta foi criada. Por favor, faça o login.');
-      router.push('/login');
+      router.push('/(auth)/login');
     }
   };
 
