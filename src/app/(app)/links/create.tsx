@@ -1,4 +1,4 @@
-import { createPaymentLink } from '@/features/paymentLinks/services/paymentLinkService';
+import { createPaymentLink } from '@/features/payment-links/services/paymentLinkService';
 import { colors } from '@/theme/colors';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';

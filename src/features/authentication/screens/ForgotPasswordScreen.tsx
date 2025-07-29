@@ -1,4 +1,4 @@
-import { authService } from '@/features/auth/services/authService';
+import { authService } from '@/features/authentication/services/authService';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';

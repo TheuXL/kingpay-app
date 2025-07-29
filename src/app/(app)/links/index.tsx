@@ -1,18 +1,18 @@
+import PaymentLinkItem from '@/features/payment-links/components/PaymentLinkItem';
+import { usePaymentLinks } from '@/features/payment-links/hooks/usePaymentLinks';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  TouchableOpacity,
-  SafeAreaView,
-  RefreshControl,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { usePaymentLinks } from '@/features/paymentLinks/hooks/usePaymentLinks';
-import PaymentLinkItem from '@/components/links/PaymentLinkItem';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function PaymentLinksScreen() {
   const router = useRouter();

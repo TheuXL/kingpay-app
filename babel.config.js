@@ -9,9 +9,9 @@ module.exports = function(api) {
         'module-resolver',
         {
           alias: {
-            'react-native/Libraries/Components/Touchable/TouchableOpacity':
-              './src/components/common/LoggedTouchableOpacity',
+            '@': './src',
           },
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
         },
       ],
     ],

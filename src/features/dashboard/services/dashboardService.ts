@@ -8,12 +8,12 @@
 
 import { edgeFunctionsProxy } from '../../../services/api/EdgeFunctionsProxy';
 import type {
-  AdditionalInfoResponse,
-  ChartResponse,
-  DashboardResponse,
-  TopSellersResponse,
-  WhitelabelBillingResponse,
-  WhitelabelFinancialResponse,
+    AdditionalInfoResponse,
+    ChartResponse,
+    DashboardResponse,
+    TopSellersResponse,
+    WhitelabelBillingResponse,
+    WhitelabelFinancialResponse,
 } from '../../../types/dashboard';
 
 export const getDashboardData = async (
@@ -65,9 +65,24 @@ export const getTopSellers = async (
   startDate: string,
   endDate: string,
 ): Promise<TopSellersResponse> => {
+  const params = `?start_date=${startDate}&end_date=${endDate}`;
   const response = await edgeFunctionsProxy.invoke(
-    `analytics-reports/top-sellers?start_date=${startDate}&end_date=${endDate}`,
-    'GET',
+    `dados-dashboard/top-sellers${params}`,
+    'POST',
+    {},
+  );
+  return response;
+};
+
+export const getTopProducts = async (
+  startDate: string,
+  endDate: string,
+): Promise<any> => {
+  const params = `?start_date=${startDate}&end_date=${endDate}`;
+  const response = await edgeFunctionsProxy.invoke(
+    `dados-dashboard/top-produtos${params}`,
+    'POST',
+    {},
   );
   return response;
 };
@@ -76,26 +91,48 @@ export const getFaturamentoWhitelabel = async (
   startDate: string,
   endDate: string,
 ): Promise<WhitelabelBillingResponse> => {
+  const params = `?start_date=${startDate}&end_date=${endDate}`;
   const response = await edgeFunctionsProxy.invoke(
-    `faturamento-whitelabel?start_date=${startDate}&end_date=${endDate}`,
-    'GET',
+    `faturamento-whitelabel${params}`,
+    'POST',
+    {},
   );
   return response;
 };
 
-export const getAcquirer = async (
-  acquirerId: string,
+export const getFinancialSummary = async (
+  startDate?: string,
+  endDate?: string,
 ): Promise<WhitelabelFinancialResponse> => {
+  const params = startDate && endDate ? `?start_date=${startDate}&end_date=${endDate}` : '';
   const response = await edgeFunctionsProxy.invoke(
-    `acquirer/${acquirerId}`,
-    'GET',
+    `whitelabel-financeiro${params}`,
+    'POST',
+    {},
   );
   return response;
 };
 
-export const getFinancialSummary = async (): Promise<WhitelabelFinancialResponse> => {
+export const getProviders = async (
+  startDate: string,
+  endDate: string,
+): Promise<any> => {
+  const params = `?start_date=${startDate}&end_date=${endDate}`;
   const response = await edgeFunctionsProxy.invoke(
-    `whitelabel-financeiro`,
+    `dados-dashboard/providers${params}`,
+    'POST',
+    {},
+  );
+  return response;
+};
+
+export const getAcquirers = async (
+  startDate: string,
+  endDate: string,
+): Promise<any> => {
+  const params = `?start_date=${startDate}&end_date=${endDate}`;
+  const response = await edgeFunctionsProxy.invoke(
+    `dados-dashboard/acquirer${params}`,
     'POST',
     {},
   );

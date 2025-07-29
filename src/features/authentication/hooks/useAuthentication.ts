@@ -1,7 +1,7 @@
 import { useAppContext } from "@/contexts/AppContext";
-import { authService } from "@/features/auth/services/authService";
 import { logger } from "@/lib/logger/logger";
 import { useState } from "react";
+import { authService } from "../services/authService";
 
 /**
  * Hook customizado para gerenciar o fluxo de autenticação.

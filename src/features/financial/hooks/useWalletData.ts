@@ -1,63 +1,103 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useUserData } from '../../../contexts/UserDataContext';
-import { walletService, type FinancialSummary, type WalletTransaction } from '../services/walletService';
+import { useAuth } from '../../../contexts/AppContext';
+import * as walletService from '../services/walletService';
+
+// Adicionar tipos para os dados da carteira
+interface FinancialData {
+    total_balances: {
+        total_balance: number;
+        total_balance_card: number;
+        total_financial_reserve: number;
+    };
+    pending_withdrawals: {
+        total_pending_withdrawals: number;
+    };
+    // Adicione outros campos que vierem da API
+}
+
+interface Statement {
+    id: string;
+    created_at: string;
+    tipo: string;
+    value: number;
+    entrada: boolean;
+}
 
 export const useWalletData = () => {
-  const { userProfile } = useUserData();
-  const [financialSummary, setFinancialSummary] = useState<FinancialSummary | null>(null);
-  const [walletStatement, setWalletStatement] = useState<WalletTransaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true); 
-  const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
+    const [financialData, setFinancialData] = useState<FinancialData | null>(null);
+    const [statement, setStatement] = useState<Statement[]>([]);
+    const [anticipations, setAnticipations] = useState<any[]>([]);
+    const [withdrawals, setWithdrawals] = useState<any[]>([]);
+    const [pixKeys, setPixKeys] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
 
-  const loadWalletData = useCallback(async () => {
-    if (!userProfile?.id) {
-        setIsLoading(false);
-        return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
+    const fetchData = useCallback(async () => {
+        if (!user) return;
 
-    try {
-      console.log('🔄 Carregando dados da carteira...');
-      console.log(`👤 User ID: ${userProfile.id}`);
+        try {
+            setLoading(true);
+            setError(null);
 
-      // Carregar dados da carteira
-      const summaryRes = await walletService.getWalletData(userProfile.id);
-      if (summaryRes.success && summaryRes.data) {
-        setFinancialSummary(summaryRes.data);
-        console.log('✅ Dados da carteira carregados:', summaryRes.data);
-      } else {
-        throw new Error(summaryRes.error || 'Erro ao carregar dados da carteira');
-      }
+            const [
+                financial,
+                statementData,
+                anticipationsData,
+                withdrawalsData,
+                pixKeysData
+            ] = await Promise.all([
+                walletService.getFinancialData(),
+                walletService.getWalletStatement(user.id),
+                walletService.getAnticipations(),
+                walletService.getWithdrawals(),
+                walletService.getPixKeys(),
+            ]);
 
-      // Carregar extrato
-      const statementRes = await walletService.getWalletStatement(userProfile.id);
-      if (statementRes.success && statementRes.data) {
-        setWalletStatement(statementRes.data);
-        console.log('✅ Extrato carregado:', statementRes.data.length, 'transações');
-      } else {
-        console.warn('⚠️ Erro ao carregar extrato:', statementRes.error);
-        setWalletStatement([]);
-      }
+            // O retorno da API para financialData pode estar aninhado
+            if (financial) {
+                 setFinancialData(financial);
+            }
 
-    } catch (err: any) {
-      console.error('❌ Erro ao carregar dados da carteira:', err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userProfile?.id]);
+            // O retorno do extrato pode vir dentro de um objeto { "extrato": [...] }
+            if (statementData && statementData.extrato) {
+                setStatement(statementData.extrato);
+            } else if (Array.isArray(statementData)) {
+                setStatement(statementData);
+            }
 
-  useEffect(() => {
-    loadWalletData();
-  }, [loadWalletData]);
+            if (anticipationsData && anticipationsData.data) {
+                setAnticipations(anticipationsData.data);
+            }
+            
+            if (withdrawalsData && withdrawalsData.withdrawals) {
+                setWithdrawals(withdrawalsData.withdrawals);
+            }
+            
+            if (pixKeysData && pixKeysData.data) {
+                setPixKeys(pixKeysData.data);
+            }
 
-  return {
-    financialSummary,
-    walletStatement,
-    isLoading,
-    error,
-    refetch: loadWalletData,
-  };
+        } catch (err: any) {
+            console.error("Erro ao buscar dados da carteira:", err);
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    return {
+        financialData,
+        statement,
+        anticipations,
+        withdrawals,
+        pixKeys,
+        loading,
+        error,
+        refresh: fetchData
+    };
 }; 

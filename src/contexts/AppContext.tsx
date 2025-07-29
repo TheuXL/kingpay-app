@@ -1,4 +1,4 @@
-import { authService } from '@/features/auth/services/authService';
+import { authService } from '@/features/authentication/services/authService';
 import { edgeFunctionsProxy } from '@/services/api/EdgeFunctionsProxy';
 import { logger } from '@/utils/logger';
 import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';

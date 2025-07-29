@@ -1,46 +1,86 @@
 import React from 'react';
-import { View, StyleProp, ViewStyle } from 'react-native';
-import { AppText } from '@/components/shared/AppText';
-import { Card } from '@/components/shared/Card';
+import { View, Text, StyleSheet } from 'react-native';
 import { formatCurrency } from '@/utils/formatters';
+import { colors } from '@/theme/colors';
 
-// Usando genéricos para tornar o componente reutilizável
-interface TopListCardProps<T> {
-  title: string;
-  data: T[];
-  nameKey: keyof T;
-  valueKey: keyof T;
-  style?: StyleProp<ViewStyle>;
+interface ListItemProps {
+  name: string;
+  value: number;
 }
+const ListItem = ({ name, value }: ListItemProps) => (
+  <View style={styles.listItem}>
+    <Text style={styles.itemName}>{name}</Text>
+    <Text style={styles.itemValue}>{formatCurrency(value)}</Text>
+  </View>
+);
 
-export function TopListCard<T>({
-  title,
-  data,
-  nameKey,
-  valueKey,
-  style,
-}: TopListCardProps<T>) {
+interface TopListCardProps<T extends object> {
+    title: string;
+    subtitle?: string;
+    data: T[];
+    nameKey: keyof T;
+    valueKey: keyof T;
+}
+export function TopListCard<T extends object>({ title, subtitle, data, nameKey, valueKey }: TopListCardProps<T>) {
+  if (!data || data.length === 0) return null;
+
   return (
-    <Card style={style}>
-      <AppText size="lg" weight="bold" color="textPrimary" style={{ marginBottom: 16 }}>
-        {title}
-      </AppText>
-      <View style={{ gap: 12 }}>
-        {data && data.length > 0 ? (
-          data.slice(0, 5).map((item, index) => (
-            <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText color="textSecondary" style={{ flex: 1 }} numberOfLines={1}>
-                {String(item[nameKey])}
-              </AppText>
-              <AppText weight="semibold" color="textPrimary">
-                {formatCurrency(Number(item[valueKey]))}
-              </AppText>
-            </View>
-          ))
-        ) : (
-          <AppText color="textSecondary">Nenhum dado para exibir.</AppText>
-        )}
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{title}</Text>
+        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       </View>
-    </Card>
+      {data.slice(0, 5).map((item, index) => {
+          const name = String(item[nameKey]);
+          const value = Number(item[valueKey]);
+          
+          if (isNaN(value)) {
+              return null;
+          }
+
+          return <ListItem key={index} name={name} value={value} />
+      })}
+    </View>
   );
-} 
+};
+
+const styles = StyleSheet.create({
+    card: {
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+    },
+    header: {
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: colors.textPrimary,
+        marginBottom: 4,
+    },
+    subtitle: {
+        fontSize: 12,
+        color: colors.textSecondary,
+        fontStyle: 'italic',
+    },
+    listItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    itemName: {
+        fontSize: 14,
+        color: colors.textSecondary,
+    },
+    itemValue: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: colors.textPrimary,
+    },
+});
+
+export default TopListCard; 

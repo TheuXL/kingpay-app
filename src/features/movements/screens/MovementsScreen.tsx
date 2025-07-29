@@ -15,7 +15,7 @@ import {
 import { useAppContext } from '../../../contexts/AppContext';
 import { walletService } from '../../../features/financial/services/walletService';
 import { Movement as ApiMovement } from '../../../features/financial/types';
-import { pixKeyService } from '../../../features/pixKeys/services';
+import { pixKeyService } from '../../../features/pix-keys/services';
 // ✅ IMPORTAR UTILITÁRIOS DE VALIDAÇÃO DE TEXTO
 import { useRouter } from 'expo-router';
 import { SafeView, safeText } from '../../../utils/textValidation';

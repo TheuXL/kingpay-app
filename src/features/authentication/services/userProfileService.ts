@@ -49,7 +49,7 @@ class UserProfileService {
       if (profileData.company) {
         const { data: companyResult, error: companyError } = await supabase
             .from('vb_cdz_gus_companies_tb')
-            .select('id, name, logo_url')
+            .select('*')
             .eq('id', profileData.company)
             .single();
 

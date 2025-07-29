@@ -1,3 +1,3 @@
-import CompaniesScreen from '@/features/companies/screens/CompaniesScreen';
+import { CompaniesScreen } from '@/features/companies/screens/CompaniesScreen';
 
 export default CompaniesScreen;

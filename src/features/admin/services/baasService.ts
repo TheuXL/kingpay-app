@@ -1,48 +1,61 @@
-import supabase from '../../../config/supabaseClient';
+import { edgeFunctionsProxy } from "../../../services/api/EdgeFunctionsProxy";
+
+export interface BaaSProvider {
+  id: string;
+  name: string;
+  ativo: boolean;
+  // Outros campos relevantes
+}
+
+export interface BaaSTaxes {
+  fee: number;
+  // Outros campos de taxas
+}
 
 /**
  * Módulo: BaaS (Banking as a Service) - Admin
- * Endpoints para gerenciamento de provedores BaaS.
  */
+export class BaasService {
 
-/**
- * GET /baas/:id - Busca detalhes de um provedor BaaS.
- */
-export const getBaaSProvider = async (providerId: string) => {
-  const { data, error } = await supabase.functions.invoke(`baas/${providerId}`);
-  if (error) throw error;
-  return data;
-};
+  async getBaasProviders(): Promise<BaaSProvider[]> {
+    const response = await edgeFunctionsProxy.invoke('baas', 'GET');
+    if (response.success && response.data?.Baas) {
+      return response.data.Baas as BaaSProvider[];
+    }
+    throw new Error(response.error || 'Erro ao listar provedores BaaS.');
+  }
 
-/**
- * GET /baas/:id/taxas - Busca taxas de um provedor BaaS.
- */
-export const getBaaSRates = async (providerId: string) => {
-  const { data, error } = await supabase.functions.invoke(`baas/${providerId}/taxas`);
-  if (error) throw error;
-  return data;
-};
+  async getBaasProviderById(id: string): Promise<BaaSProvider> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}`, 'GET');
+    if (response.success && response.data?.Baas) {
+      return response.data.Baas as BaaSProvider;
+    }
+    throw new Error(response.error || `Erro ao buscar provedor BaaS ${id}.`);
+  }
 
-/**
- * PATCH /baas/:id/active - Ativa ou desativa um provedor BaaS.
- */
-export const setBaaSProviderActive = async (providerId: string, isActive: boolean) => {
-  const { data, error } = await supabase.functions.invoke(`baas/${providerId}/active`, {
-    method: 'PATCH',
-    body: { active: isActive },
-  });
-  if (error) throw error;
-  return data;
-};
+  async getBaasProviderTaxes(id: string): Promise<BaaSTaxes> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/taxas`, 'GET');
+    if (response.success && response.data?.taxas) {
+      return response.data.taxas as BaaSTaxes;
+    }
+    throw new Error(response.error || `Erro ao buscar taxas do BaaS ${id}.`);
+  }
 
-/**
- * PATCH /baas/:id/taxa - Atualiza uma taxa específica de um provedor BaaS.
- */
-export const updateBaaSRate = async (providerId: string, rateData: { rateName: string; rateValue: number }) => {
-  const { data, error } = await supabase.functions.invoke(`baas/${providerId}/taxa`, {
-    method: 'PATCH',
-    body: rateData,
-  });
-  if (error) throw error;
-  return data;
-}; 
+  async setBaasProviderStatus(id: string, isActive: boolean): Promise<any> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/active`, 'PATCH', { active: isActive });
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.error || `Erro ao ativar/desativar BaaS ${id}.`);
+  }
+
+  async updateBaasProviderTax(id: string, taxData: { fee: number }): Promise<any> {
+    const response = await edgeFunctionsProxy.invoke(`baas/${id}/taxa`, 'PATCH', taxData);
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.error || `Erro ao atualizar taxa do BaaS ${id}.`);
+  }
+}
+
+export const baasService = new BaasService(); 

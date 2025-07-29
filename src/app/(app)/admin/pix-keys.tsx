@@ -1,3 +1,3 @@
-import PixKeysScreen from '../../../features/pixKeys/screens/PixKeysScreen';
+import PixKeysScreen from '@/features/pix-keys/screens/PixKeysScreen';
 
 export default PixKeysScreen;

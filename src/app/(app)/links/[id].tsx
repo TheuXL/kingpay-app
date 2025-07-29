@@ -1,4 +1,4 @@
-import { getPaymentLinkById, PaymentLink } from '@/features/paymentLinks/services/paymentLinkService';
+import { getPaymentLinkById, PaymentLink } from '@/features/payment-links/services/paymentLinkService';
 import { colors } from '@/theme/colors';
 import { formatCurrency } from '@/utils/formatters';
 import { useLocalSearchParams, useRouter } from 'expo-router';

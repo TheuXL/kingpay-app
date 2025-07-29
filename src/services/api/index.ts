@@ -16,13 +16,13 @@ export * as transactionService from '../../features/transactions/services/transa
 export * as pixService from '../../features/pix/services/pixService';
 
 // Payment Links
-export * as paymentLinkService from '../../features/paymentLinks/services/paymentLinkService';
+export * as paymentLinkService from '../../features/payment-links/services/paymentLinkService';
 
 // Subconta/Marketplace
-export * as subcontaService from '../../features/subconta/services/subcontaService';
+export * as subcontaService from '../../features/subcontas/services/subcontaService';
 
 // Companies
-export * as companyService from '../../features/company/services/companyService';
+export * as companyService from '../../features/companies/services/companyService';
 
 // Configurações (ainda precisa ser criado)
 // export * as configService from '../../features/config/services/configService';

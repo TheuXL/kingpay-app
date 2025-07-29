@@ -8,7 +8,7 @@ import { ActivityIndicator, RefreshControl, SafeAreaView, ScrollView, StyleSheet
 // Importe os componentes de lista reais que criamos
 import { AnticipationsList } from '@/features/anticipations/components/AnticipationsList';
 import TransactionItem from '@/features/financial/components/TransactionItem';
-import { PixKeysList } from '@/features/pixKeys/components/PixKeysList';
+import { PixKeysList } from '@/features/pix-keys/components/PixKeysList';
 import { formatCurrency, formatShortDate } from '@/utils/formatters';
 
 // Placeholder para a lista de saques (transferências)

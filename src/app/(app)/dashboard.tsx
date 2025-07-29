@@ -3,14 +3,14 @@ import { colors } from '@/theme/colors';
 import React from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import PaymentMethodsCard from '@/components/dashboard/PaymentMethodsCard';
-import PeriodSelector from '@/components/dashboard/PeriodSelector';
-import RefundsCard from '@/components/dashboard/RefundsCard';
-import { SalesChartCard } from '@/components/dashboard/SalesChartCard';
-import SalesMetricsCard from '@/components/dashboard/SalesMetricsCard';
-import TopListCard from '@/components/dashboard/TopListCard';
-import WhitelabelBillingCard from '@/components/dashboard/WhitelabelBillingCard';
-import WhitelabelFinancialCard from '@/components/dashboard/WhitelabelFinancialCard';
+import PaymentMethodsCard from '@/features/dashboard/components/PaymentMethodsCard';
+import PeriodSelector from '@/features/dashboard/components/PeriodSelector';
+import RefundsCard from '@/features/dashboard/components/RefundsCard';
+import { SalesChartCard } from '@/features/dashboard/components/SalesChartCard';
+import SalesMetricsCard from '@/features/dashboard/components/SalesMetricsCard';
+import TopListCard from '@/features/dashboard/components/TopListCard';
+import WhitelabelBillingCard from '@/features/dashboard/components/WhitelabelBillingCard';
+import WhitelabelFinancialCard from '@/features/dashboard/components/WhitelabelFinancialCard';
 
 export default function DashboardScreen() {
   const today = new Date();
