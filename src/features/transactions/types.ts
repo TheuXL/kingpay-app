@@ -2,91 +2,28 @@
  * Interface principal de transação baseada na estrutura real da tabela vb_cdz_gus_transactions_tb
  */
 export interface Transaction {
-  // Campos principais
   id: string;
-  createdat: string;
-  updatedat: string;
-  date: string;
-  time?: string;
-  
-  // Valores monetários
-  chargedamount: number; // Valor cobrado (em centavos no banco, convertido para reais)
-  netamount: number; // Valor líquido
-  
-  // Informações de pagamento
-  paymentmethod: string; // pix, card, boleto
-  status: string; // pending, paid, failed, etc.
-  success?: boolean;
-  month?: number;
-  installments?: number;
-  
-  // IDs relacionados
-  companyid: string;
-  clientid?: string;
-  userId?: string;
-  acquirerid?: string;
-  
-  // Dados específicos do método de pagamento
-  // PIX
-  pixcode?: string;
-  end2EndId?: string;
-  qr_code_url?: string;
-  
-  // Cartão
-  cardHolderName?: string;
-  cardLastDigits?: string;
-  cardExpirationMonth?: number;
-  cardExpirationYear?: number;
-  cardflag?: string; // visa, mastercard, etc.
-  
-  // Boleto
-  boletourl?: string;
-  digitableLine?: string;
-  barcode_boleto?: string;
-  duedate?: string;
-  
-  // Metadados
-  description?: string;
-  metadata?: string;
-  clientip?: string;
-  
-  // Dados de rastreamento
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  utm_content?: string;
-  utm_term?: string;
-  fbc?: string; // Facebook Click ID
-  fbp?: string; // Facebook Browser ID
-  operating_system?: string;
-  browser_data?: string;
-  cityTracker?: string;
-  RegiaoTracker?: string;
-  
-  // Status de transação
-  anticipated?: boolean;
-  availableforanticipation?: boolean;
-  anticipationunderreview?: boolean;
-  refunded?: boolean;
-  refund_date?: string;
-  paidat?: string;
-  
-  // Dados de entrega
-  delivery_status?: string;
-  delivery_code?: string;
-  
-  // E-commerce
-  store?: string;
-  idShopify?: string;
-  splits?: any[];
-  itens?: any[];
-  
-  // Outros
-  motivoDoErro?: string;
-  provider?: string;
-  idAdquirente?: string;
-  postbackUrl?: string;
-  fraud_detection?: any;
+  customer_name: string;
+  customer_email: string;
+  value: number;
+  status: 'paid' | 'pending' | 'refunded' | 'failed' | 'expired';
+  payment_method: 'credit_card' | 'pix' | 'boleto';
+  created_at: string;
+  // Adicionar outros campos relevantes que a API retorna
+}
+
+export interface TransactionsResponse {
+  data: Transaction[];
+  total: number;
+}
+
+export interface TransactionFilters {
+  limit: number;
+  offset: number;
+  status?: string;
+  paymentMethod?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 /**
@@ -118,34 +55,21 @@ export interface TransactionSummary {
 }
 
 /**
- * Interface para filtros de transações
- */
-export interface TransactionFilters {
-  status?: string[];
-  payment_method?: string[];
-  start_date?: string;
-  end_date?: string;
-  customer_id?: string;
-  company_id?: string;
-  limit?: number;
-  offset?: number;
-}
-
-/**
  * Interface para detalhes completos de transação (com dados relacionados)
  */
 export interface TransactionDetails extends Transaction {
-  customer_name?: string;
-  customer_email?: string;
-  customer_phone?: string;
-  company_name?: string;
-  company_status?: string;
-  user_fullname?: string;
-  user_email?: string;
-  user_phone?: string;
-  fees?: number;
-  gateway_response?: any;
-  webhook_data?: any;
+  // A interface TransactionDetails herda todos os campos de Transaction.
+  // Adicione aqui apenas os campos que são EXCLUSIVOS da visualização de detalhes.
+  chargeback_reason?: string;
+  card_brand?: string;
+  card_last_four?: string;
+  boleto_url?: string;
+  boleto_barcode?: string;
+  pix_qr_code?: string;
+  timeline?: {
+    status: string;
+    timestamp: string;
+  }[];
 }
 
 /**

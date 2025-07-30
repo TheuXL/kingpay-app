@@ -29,6 +29,7 @@ export default function AppLayout() {
         <Tabs.Screen name="dashboard" options={{ href: null }} />
         <Tabs.Screen name="carteira" />
         <Tabs.Screen name="links/index" options={{ href: null }} />
+        <Tabs.Screen name="transactions" options={{ href: null }} />
         {/* Adicionar outras rotas que não devem aparecer na tab bar */}
       </Tabs>
     </UserDataProvider>

@@ -16,7 +16,7 @@ const QuickActions = () => {
         {
           icon: ArrowRightLeft,
           label: 'Transações',
-          onPress: () => console.log('Transações Pressionado'),
+          onPress: () => router.push('/transactions'),
         },
         {
           icon: Link,
