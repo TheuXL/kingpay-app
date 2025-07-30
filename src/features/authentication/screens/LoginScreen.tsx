@@ -1,9 +1,18 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { Eye } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button } from '../../../components/common/Button';
-import { FormInput } from '../../../components/common/FormInput';
+import {
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { KingPayLogo } from '../../../components/common/KingPayLogo';
 import { useAuthentication } from '../hooks/useAuthentication';
 
@@ -12,9 +21,10 @@ export default function LoginScreen() {
   const { login, isLoading, error } = useAuthentication();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLoginSubmit = async () => {
-    // A lógica de negócio permanece a mesma
     const success = await login(email, password);
     if (success) {
       router.replace('/(app)');
@@ -22,181 +32,213 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#E6E9FF']}
-        style={styles.container}
+    <SafeAreaView style={styles.page}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? -100 : 0}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
-            <KingPayLogo width={150} height={40} />
+            <KingPayLogo width={90} height={18} />
           </View>
 
-          <View style={styles.welcomeSection}>
-            <Text style={styles.welcomeText}>
-              <Text style={styles.welcomeTextGray}>Tudo que seu negócio precisa, </Text>
-              <Text style={styles.welcomeTextBlue}>em um só lugar.</Text>
+          <View style={styles.taglineContainer}>
+            <Text style={styles.taglineText}>
+              Tudo que seu negócio precisa, em um só lugar.
             </Text>
           </View>
 
-          <View style={styles.cardIllustration}>
-            {/* Placeholder para a imagem dos cartões */}
-            <View style={styles.cardPlaceholder} />
-            <View style={[styles.cardPlaceholder, styles.cardPlaceholderOverlay]} />
-          </View>
-
-          {/* Mantendo os campos de login para funcionalidade */}
           <View style={styles.formContainer}>
-            <FormInput
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                placeholder="seuemail@exemplo.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
-            <FormInput
-                label="Senha"
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Sua senha"
-                secureTextEntry
-            />
-             {error && <Text style={styles.errorText}>{error}</Text>}
-          </View>
-
-          <View style={styles.actions}>
-            <Button
-              title={isLoading ? 'Entrando...' : 'Fazer login'}
-              onPress={handleLoginSubmit}
-              style={styles.loginButton}
-              textStyle={styles.loginButtonText}
-              disabled={isLoading}
-            />
-            <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-              <View style={styles.forgotPasswordButton}>
-                <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="seuemail@exemplo.com"
+                  placeholderTextColor="#9E9E9E"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
               </View>
-            </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Senha</Text>
+              <View style={styles.passwordInputWrapper}>
+                <TextInput
+                  style={styles.textInput}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Sua senha"
+                  placeholderTextColor="#9E9E9E"
+                  secureTextEntry={!isPasswordVisible}
+                />
+                <TouchableOpacity onPress={() => setPasswordVisible(!isPasswordVisible)}>
+                  <Eye color="#5B5B5B" size={22} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.rememberAccessContainer}>
+              <Text style={styles.rememberLabel}>Lembrar acesso</Text>
+              <TouchableOpacity
+                style={[styles.checkboxBase, rememberMe && styles.checkboxChecked]}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                {rememberMe && <View style={styles.checkboxInner} />}
+              </TouchableOpacity>
+            </View>
           </View>
 
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLoginSubmit} disabled={isLoading}>
+              <Text style={styles.loginButtonText}>{isLoading ? 'Entrando...' : 'Fazer login'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => router.push('/(auth)/forgot-password')}>
+              <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+            </TouchableOpacity>
+            
+            {error && <Text style={styles.errorText}>{error}</Text>}
+          </View>
         </ScrollView>
-      </LinearGradient>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+const windowWidth = Dimensions.get('window').width;
+
 const styles = StyleSheet.create({
-  container: {
+  page: {
     flex: 1,
+    backgroundColor: '#F8F9FE', // Fundo lavanda claro
   },
-  scrollContent: {
+  scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   header: {
-    alignSelf: 'flex-start',
-    marginTop: 60,
-    marginBottom: 40,
+    paddingTop: 40,
+    alignItems: 'flex-start',
   },
-  welcomeSection: {
-    alignSelf: 'flex-start',
-    marginBottom: 40,
+  taglineContainer: {
+    marginTop: 48,
+    marginBottom: 60,
   },
-  welcomeText: {
-    fontSize: 32,
-    lineHeight: 40,
-    fontFamily: 'sans-serif', // Assumindo uma fonte sem serifa padrão
+  taglineText: {
+    fontSize: 40,
+    lineHeight: 52,
+    color: '#7575B3',
     fontWeight: '400',
-  },
-  welcomeTextGray: {
-    color: '#6B6B6B',
-  },
-  welcomeTextBlue: {
-    color: '#1A1AFF',
-  },
-  cardIllustration: {
-    width: '100%',
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  cardPlaceholder: {
-    width: 280,
-    height: 160,
-    backgroundColor: '#2D3748', // Azul escuro
-    borderRadius: 16,
-    position: 'absolute',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    transform: [{ rotate: '-10deg' }],
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.30,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  cardPlaceholderOverlay: {
-    backgroundColor: '#1A202C', // Preto
-    transform: [{ rotate: '10deg' }, { translateX: 40 }, { translateY: -20 }],
   },
   formContainer: {
     width: '100%',
-    marginBottom: 20,
   },
-  actions: {
-    width: '100%',
+  inputGroup: {
+    marginBottom: 24,
+  },
+  inputLabel: {
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#333333',
+    marginBottom: 12,
+  },
+  inputWrapper: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    height: 56,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  passwordInputWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 40,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    height: 56,
+    paddingHorizontal: 16,
   },
-  loginButton: {
-    backgroundColor: '#1A1AFF',
-    borderRadius: 24,
-    width: '100%',
-    height: 48,
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333333',
+  },
+  rememberAccessContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 40,
+  },
+  rememberLabel: {
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: '500',
+  },
+  checkboxBase: {
+    width: 26,
+    height: 26,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#B0B0B0',
+    borderRadius: 6,
+  },
+  checkboxChecked: {
+    backgroundColor: '#1A1AFF',
+    borderColor: '#1A1AFF',
+  },
+  checkboxInner: {
+    // Para um checkmark, você pode usar um ícone ou uma View estilizada
+  },
+  buttonsContainer: {
+    width: '100%',
+  },
+  loginButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: 54,
+    backgroundColor: '#1A1AFF',
+    borderRadius: 27,
+    marginBottom: 16,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    fontWeight: '600',
     fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'sans-serif-medium',
+    color: '#FFFFFF',
   },
   forgotPasswordButton: {
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: 54,
     borderWidth: 1,
-    borderColor: 'rgba(26, 26, 255, 0.3)',
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    borderColor: '#D3DFFF', // Borda azul clara
+    backgroundColor: '#F8F9FE',
+    borderRadius: 27,
   },
   forgotPasswordText: {
-    color: '#1A1AFF',
+    fontWeight: '600',
     fontSize: 16,
-    fontFamily: 'sans-serif',
+    color: '#1A1AFF',
   },
   errorText: {
     color: 'red',
-    marginTop: 10,
     textAlign: 'center',
+    marginTop: 20,
   },
-}); 
+});
