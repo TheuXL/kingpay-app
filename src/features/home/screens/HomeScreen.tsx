@@ -1,15 +1,12 @@
-import ApprovalRateCarouselCard from '@/components/home/ApprovalRateCarouselCard';
-import CarouselContainer from '@/components/home/CarouselContainer';
-import ExploreCard from '@/components/home/ExploreCard';
-import HeaderUser from '@/components/home/HeaderUser';
-import JourneyCard from '@/components/home/JourneyCard';
-import PaymentMethodsCarouselCard from '@/components/home/PaymentMethodsCarouselCard';
-import QuickActions from '@/components/home/QuickActions';
-import RefundsCarouselCard from '@/components/home/RefundsCarouselCard';
-import SaldoCard from '@/components/home/SaldoCard';
-import SalesMetricsGrid from '@/components/home/SalesMetricsGrid';
-import SalesSummaryCard from '@/components/home/SalesSummaryCard';
-import TotalSalesCarouselCard from '@/components/home/TotalSalesCarouselCard';
+import ApprovalRateCard from '@/features/home/components/ApprovalRateCard';
+import HeaderUser from '@/features/home/components/HeaderUser';
+import JourneyCard from '@/features/home/components/JourneyCard';
+import PaymentMethodsCard from '@/features/home/components/PaymentMethodsCard';
+import QuickActions from '@/features/home/components/QuickActions';
+import RefundsCard from '@/features/home/components/RefundsCard';
+import RevenueChartCard from '@/features/home/components/RevenueChartCard';
+import SaldoCard from '@/features/home/components/SaldoCard';
+import TotalSalesCard from '@/features/home/components/TotalSalesCard';
 import React from 'react';
 import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -30,21 +27,21 @@ const HomeScreen = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1313F2" />}
       >
         <View style={styles.centeredContent}>
-          <View style={styles.headerContainer}>
-            <HeaderUser />
+          <HeaderUser />
+          <View style={styles.cardsStack}>
             <SaldoCard />
+            <QuickActions />
+            <JourneyCard />
+            <RevenueChartCard />
+            <PaymentMethodsCard data={[
+              { metodo: 'PIX', valorTotal: 100 },
+              { metodo: 'CARD', valorTotal: 50 },
+              { metodo: 'BOLETO', valorTotal: 25 },
+            ]} />
+            <RefundsCard />
+            <ApprovalRateCard />
+            <TotalSalesCard data={{ sumPaid: 1000, countPaid: 10, avgTicket: 100 }} />
           </View>
-          <QuickActions />
-          <JourneyCard />
-          <SalesSummaryCard />
-          <CarouselContainer>
-            <RefundsCarouselCard />
-            <PaymentMethodsCarouselCard />
-            <TotalSalesCarouselCard />
-            <ApprovalRateCarouselCard />
-          </CarouselContainer>
-          <SalesMetricsGrid />
-          <ExploreCard />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -54,27 +51,26 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F4F5F7', // cinza-claro suave
+    backgroundColor: '#F4F5F7',
   },
   container: {
     flex: 1,
   },
   contentContainer: {
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingTop: 30,
-    paddingBottom: 150,
-    gap: 40,
+    paddingBottom: 120,
+    paddingTop: 0,
   },
   centeredContent: {
     width: '100%',
-    maxWidth: 370,
-    alignItems: 'center',
+    maxWidth: 398,
+    alignItems: 'stretch',
+    paddingHorizontal: 24,
   },
-  headerContainer: {
-    gap: 24,
+  cardsStack: {
     width: '100%',
-    maxWidth: 350,
+    gap: 24,
+    alignItems: 'stretch',
   },
 });
 

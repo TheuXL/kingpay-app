@@ -1,5 +1,6 @@
+// src/features/home/components/QuickActions.tsx
 import { useRouter } from 'expo-router';
-import { AppWindow, ArrowRightLeft, Link, Wallet } from 'lucide-react-native';
+import { AppWindow, ArrowRightLeft, Link as LinkIcon, Wallet } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -10,22 +11,22 @@ const QuickActions = () => {
         {
           icon: Wallet,
           label: 'Carteira',
-          onPress: () => router.push('/carteira'),
+          onPress: () => router.push('/(app)/carteira'),
         },
         {
           icon: ArrowRightLeft,
           label: 'Transações',
-          onPress: () => router.push('/transactions'),
+          onPress: () => router.push('/(app)/transactions'),
         },
         {
-          icon: Link,
-          label: 'Link de Pagamento',
-          onPress: () => router.push('/links'),
+          icon: LinkIcon,
+          label: 'Link de\nPagamento',
+          onPress: () => router.push('/(app)/links'),
         },
         {
-          icon: AppWindow,
-          label: 'Área Pix',
-          onPress: () => router.push('/pix-keys'),
+            icon: AppWindow,
+            label: 'Área Pix',
+            onPress: () => router.push('/(app)/admin/pix-keys'), // Rota de exemplo
         },
       ];
 
@@ -54,12 +55,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignItems: 'flex-start',
+    marginTop: 24,
     paddingHorizontal: 10,
   },
   actionButton: {
     alignItems: 'center',
-    maxWidth: 80, 
+    gap: 12,
+    flex: 1, // Para que ocupem espaço igualmente
   },
   iconContainer: {
     width: 68,
@@ -68,12 +70,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 10,
     elevation: 4,

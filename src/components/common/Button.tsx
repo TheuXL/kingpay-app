@@ -1,90 +1,110 @@
+// src/components/common/Button.tsx
+import { ArrowRight, Check } from 'phosphor-react-native';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { withLogging } from "./withLogging";
+import { ActivityIndicator, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { colors } from '../../theme/colors';
 
-interface ButtonProps {
+type ButtonProps = {
   title: string;
   onPress: () => void;
-  primary?: boolean;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   loading?: boolean;
   disabled?: boolean;
-  style?: object;
-  textStyle?: object;
-}
+  icon?: 'arrow' | 'check' | React.ReactNode;
+};
 
-export const Button: React.FC<ButtonProps> = ({
-  title,
-  onPress,
-  primary = true,
-  loading = false,
-  disabled = false,
-  style,
-  textStyle,
-}) => {
+export const Button = ({ title, onPress, variant = 'primary', loading = false, disabled = false, icon }: ButtonProps) => {
+  const buttonStyle: ViewStyle[] = [styles.base];
+  const textStyle: TextStyle[] = [styles.textBase];
+
+  switch (variant) {
+    case 'primary':
+      buttonStyle.push(styles.primary);
+      textStyle.push(styles.textPrimary);
+      break;
+    case 'secondary':
+      buttonStyle.push(styles.secondary);
+      textStyle.push(styles.textSecondary);
+      break;
+    case 'ghost':
+      buttonStyle.push(styles.ghost);
+      textStyle.push(styles.textGhost);
+      break;
+    case 'danger':
+      buttonStyle.push(styles.danger);
+      textStyle.push(styles.textDanger);
+      break;
+  }
+  
+  if (disabled || loading) {
+    buttonStyle.push(styles.disabled);
+  }
+  
+  const renderIcon = () => {
+    if (!icon) return null;
+    if (icon === 'arrow') return <ArrowRight size={20} color={colors.white} style={styles.icon} />;
+    if (icon === 'check') return <Check size={20} color={colors.white} style={styles.icon} />;
+    return icon;
+  }
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        primary ? styles.primaryButton : styles.secondaryButton,
-        disabled || loading ? styles.disabledButton : {},
-        style,
-      ]}
-      onPress={onPress}
-      disabled={disabled || loading}
-    >
+    <TouchableOpacity onPress={onPress} style={buttonStyle} disabled={disabled || loading}>
       {loading ? (
-        <ActivityIndicator color={primary ? 'white' : '#0052cc'} />
+        <ActivityIndicator color={variant === 'primary' ? colors.white : colors.primary} />
       ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            primary ? styles.primaryText : styles.secondaryText,
-            disabled ? styles.disabledText : {},
-            textStyle,
-          ]}
-        >
-          {title}
-        </Text>
+        <>
+          <Text style={textStyle}>{title}</Text>
+          {renderIcon()}
+        </>
       )}
     </TouchableOpacity>
   );
 };
 
-export const LoggedButton = withLogging(Button);
-
 const styles = StyleSheet.create({
-  button: {
-    height: 50,
+  base: {
+    flexDirection: 'row',
+    height: 56,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    width: '100%',
+    paddingHorizontal: 24,
     marginVertical: 8,
   },
-  primaryButton: {
-    backgroundColor: '#0052cc',
+  textBase: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  secondaryButton: {
+  icon: {
+    marginLeft: 8,
+  },
+  primary: {
+    backgroundColor: colors.primaryDark,
+  },
+  textPrimary: {
+    color: colors.white,
+  },
+  secondary: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#0052cc',
+    borderColor: colors.lightGray,
   },
-  disabledButton: {
-    backgroundColor: '#cccccc',
-    borderColor: '#cccccc',
+  textSecondary: {
+    color: colors.primary,
   },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
+  ghost: {
+    backgroundColor: 'transparent',
   },
-  primaryText: {
-    color: 'white',
+  textGhost: {
+      color: colors.primary,
   },
-  secondaryText: {
-    color: '#0052cc',
+  danger: {
+      backgroundColor: colors.red,
   },
-  disabledText: {
-    color: '#666666',
+  textDanger: {
+      color: colors.white,
   },
-}); 
+  disabled: {
+    opacity: 0.6,
+  },
+});

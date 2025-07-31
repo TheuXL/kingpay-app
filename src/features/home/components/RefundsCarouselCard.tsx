@@ -1,196 +1,100 @@
-import { ChevronDown } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// src/features/home/components/RefundsCarouselCard.tsx
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
-interface RefundsData {
-  total?: number;
-  estornos?: number;
-  cashback?: number;
-  taxaEstorno?: number;
-  // Novos campos vindos dos endpoints
-  countRefused?: number;
-  sumRefused?: number;
-  countChargeback?: number;
-  sumChargeback?: number;
-  countRefunded?: number;
-  sumRefunded?: number;
-}
-
-interface RefundsCarouselCardProps {
-  data?: RefundsData;
-  isLoading?: boolean;
-}
-
-const formatCurrency = (value: number) => {
-    return (value / 100).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-};
-
-const RefundsCarouselCard: React.FC<RefundsCarouselCardProps> = ({ 
-  data, 
-  isLoading = false 
-}) => {
-  const [selectedPeriod, setSelectedPeriod] = useState('30 dias');
-  
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Carregando estornos...</Text>
+const LegendItem = ({ color, label, value }: { color: string; label: string; value: string }) => (
+    <View style={styles.legendItemContainer}>
+        <View style={styles.legendTextContainer}>
+            <View style={[styles.legendDot, { backgroundColor: color }]} />
+            <Text style={styles.legendLabel}>{label}</Text>
         </View>
-      </View>
-    );
-  }
-
-  // Calcular total de valores negativos (estornos, recusadas, chargebacks)
-  const totalRefusedValue = (data?.sumRefused || 0) + (data?.sumChargeback || 0) + (data?.sumRefunded || 0);
-  const totalRefusedCount = (data?.countRefused || 0) + (data?.countChargeback || 0) + (data?.countRefunded || 0);
-  
-  // Renderiza a estrutura com dados reais ou placeholders
-  const totalValue = totalRefusedValue > 0 ? formatCurrency(totalRefusedValue) : 'R$ 0,00';
-  
-  // Calcular percentuais baseados nos valores
-  const refusedPercent = totalRefusedValue > 0 ? ((data?.sumRefused || 0) / totalRefusedValue) * 100 : 0;
-  const chargebackPercent = totalRefusedValue > 0 ? ((data?.sumChargeback || 0) / totalRefusedValue) * 100 : 0;
-  const refundedPercent = totalRefusedValue > 0 ? ((data?.sumRefunded || 0) / totalRefusedValue) * 100 : 0;
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Estornos e Recusas</Text>
-          <Text style={styles.value}>{totalValue}</Text>
-        </View>
-        <TouchableOpacity style={styles.periodButton}>
-          <Text style={styles.periodText}>{selectedPeriod}</Text>
-          <ChevronDown size={16} color="#333333" />
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.metricsContainer}>
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Recusadas</Text>
-          <View style={styles.metricValue}>
-            <Text style={styles.metricNumber}>{data?.countRefused || 0}</Text>
-            <Text style={styles.metricPercent}>{refusedPercent.toFixed(1)}%</Text>
-          </View>
-        </View>
-        
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Chargeback</Text>
-          <View style={styles.metricValue}>
-            <Text style={styles.metricNumber}>{data?.countChargeback || 0}</Text>
-            <Text style={styles.metricPercent}>{chargebackPercent.toFixed(1)}%</Text>
-          </View>
-        </View>
-        
-        <View style={styles.metricRow}>
-          <Text style={styles.metricLabel}>Estornadas</Text>
-          <View style={styles.metricValue}>
-            <Text style={styles.metricNumber}>{data?.countRefunded || 0}</Text>
-            <Text style={styles.metricPercent}>{refundedPercent.toFixed(1)}%</Text>
-          </View>
-        </View>
-      </View>
-      
-      <View style={styles.summaryContainer}>
-        <Text style={styles.summaryText}>
-          {totalRefusedCount} transações afetadas
-        </Text>
-      </View>
+        <Text style={styles.legendValue}>{value}</Text>
     </View>
-  );
+);
+
+const RefundsCarouselCard = () => {
+    return (
+        <View style={styles.card}>
+            <Text style={styles.title}>Reembolsos</Text>
+            <Text style={styles.totalValue}>R$ 12.547,16</Text>
+            
+            <View style={styles.progressBarContainer}>
+                <View style={[styles.progressSegment, { width: '45%', backgroundColor: '#FF8F00' }]} />
+                <View style={[styles.progressSegment, { width: '25%', backgroundColor: '#A020F0' }]} />
+                <View style={[styles.progressSegment, { width: '30%', backgroundColor: '#2E7D32' }]} />
+            </View>
+
+            <View style={styles.legendContainer}>
+                <LegendItem color="#FF8F00" label="Estornos" value="R$ 9.724,23" />
+                <LegendItem color="#A020F0" label="Cashback" value="R$ 2.822,93" />
+                <LegendItem color="#2E7D32" label="Taxa de estorno" value="12,8%" />
+            </View>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    card: {
+        width: 300,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 20,
+        marginRight: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 3,
     },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 4,
-    height: 220,
-    justifyContent: 'space-around',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#6B6B6B',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  title: {
-    fontSize: 16,
-    color: '#6B6B6B',
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF647C',
-  },
-  periodButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F5F6FA',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  periodText: {
-    fontSize: 14,
-    color: '#333333',
-    marginRight: 4,
-  },
-  metricsContainer: {
-    gap: 12,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  metricLabel: {
-    fontSize: 14,
-    color: '#6B6B6B',
-    flex: 1,
-  },
-  metricValue: {
-    alignItems: 'flex-end',
-  },
-  metricNumber: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
-  },
-  metricPercent: {
-    fontSize: 12,
-    color: '#FF647C',
-    fontWeight: '600',
-  },
-  summaryContainer: {
-    alignItems: 'center',
-  },
-  summaryText: {
-    fontSize: 12,
-    color: '#6B6B6B',
-    fontStyle: 'italic',
-  },
+    title: {
+        fontSize: 16,
+        color: '#666666',
+        marginBottom: 4,
+    },
+    totalValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333333',
+        marginBottom: 16,
+    },
+    progressBarContainer: {
+        flexDirection: 'row',
+        height: 8,
+        borderRadius: 4,
+        overflow: 'hidden',
+        backgroundColor: '#E0E0E0',
+        marginBottom: 20,
+    },
+    progressSegment: {
+        height: '100%',
+    },
+    legendContainer: {
+        gap: 12,
+    },
+    legendItemContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    legendTextContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    legendDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+    },
+    legendLabel: {
+        fontSize: 14,
+        color: '#333333',
+    },
+    legendValue: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333333',
+    },
 });
 
 export default RefundsCarouselCard;

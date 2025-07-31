@@ -3,8 +3,8 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const SaldoCard = () => {
-    // Valor fixo para fins de design
-    const totalBalance = 138241.45;
+    // Valor fixo para fins de design conforme Figma
+    const totalBalance = 13184.30;
 
     const formatCurrency = (value: number) => {
         return value.toLocaleString('pt-BR', {

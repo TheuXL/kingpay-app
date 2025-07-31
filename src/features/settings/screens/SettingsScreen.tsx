@@ -1,196 +1,95 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+// src/features/settings/screens/SettingsScreen.tsx
+import { Stack, useRouter } from 'expo-router';
+import { Buildings, Percent, SignOut, User } from 'phosphor-react-native';
 import React from 'react';
-import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { useAppContext } from '../../../contexts/AppContext';
-
-// Interfaces simplificadas para o propósito da refatoração
-interface SettingsItem {
-  id: string;
-  title: string;
-  subtitle?: string;
-  type: 'navigation' | 'switch';
-  onPress?: () => void;
-  value?: boolean;
-  chevron?: boolean;
-  color?: string;
-}
-
-interface SettingsSection {
-  id: string;
-  title: string;
-  items: SettingsItem[];
-}
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScreenContainer } from '../../../components/layout/ScreenContainer';
+import { colors } from '../../../theme/colors';
+import { SettingsMenuItem } from '../components/SettingsMenuItem';
 
 export default function SettingsScreen() {
-      const { user, logout } = useAppContext();
   const router = useRouter();
 
-  const handleLogout = async () => {
-    await logout();
-    // O redirecionamento é tratado pelo layout raiz
-  };
-
-  const settingsSections: SettingsSection[] = [
-    {
-      id: 'account',
-      title: 'Conta',
-      items: [
-        {
-          id: 'my-data',
-          title: 'Meus dados',
-          subtitle: user?.email || '',
-          type: 'navigation',
-          chevron: true,
-          onPress: () => Alert.alert('Meus dados', 'Tela de edição de dados em breve.'),
-        },
-      ],
-    },
-    {
-      id: 'security',
-      title: 'Segurança',
-      items: [
-        {
-          id: '2fa',
-          title: 'Autenticação de Dois Fatores',
-          subtitle: 'Adicione uma camada extra de segurança',
-          type: 'navigation',
-          chevron: true,
-          onPress: () => router.push('/(app)/security'),
-        },
-      ],
-    },
-    {
-      id: 'support',
-      title: 'Suporte',
-      items: [
-        {
-          id: 'help-center',
-          title: 'Central de Ajuda',
-          subtitle: 'Encontre respostas para suas dúvidas',
-          type: 'navigation',
-          chevron: true,
-          onPress: () => router.push('/(app)/support'),
-        },
-      ],
-    },
-    {
-      id: 'session',
-      title: 'Sessão',
-      items: [
-        {
-          id: 'logout',
-          title: 'Sair da Conta',
-          type: 'navigation',
-          onPress: handleLogout,
-          color: '#D92D20',
-        },
-      ],
-    },
-  ];
-
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Ajustes</Text>
-      </View>
-      <ScrollView>
-        {settingsSections.map((section) => (
-          <View key={section.id} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            {section.items.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.item,
-                  index === section.items.length - 1 && styles.itemLast,
-                ]}
-                onPress={item.onPress}
-                disabled={!item.onPress}
-              >
-                <View style={styles.itemLeft}>
-                  <Text style={[styles.itemTitle, { color: item.color || '#101828' }]}>
-                    {item.title}
-                  </Text>
-                  {item.subtitle && (
-                    <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
-                  )}
-                </View>
-                {item.type === 'navigation' && item.chevron && (
-                  <Ionicons name="chevron-forward" size={20} color="#667085" />
-                )}
-                {item.type === 'switch' && (
-                  <Switch
-                    value={item.value}
-                    onValueChange={item.onPress}
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
+    <ScreenContainer style={{ paddingHorizontal: 20, backgroundColor: colors.background }}>
+      <Stack.Screen options={{ title: 'Configurações', headerShadowVisible: false, headerStyle: { backgroundColor: colors.background } }} />
+      
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Profile Card */}
+        <View style={styles.profileContainer}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>ST</Text>
           </View>
-        ))}
+          <Text style={styles.companyName}>Soutech Tecnologia de Pagamentos</Text>
+          <Text style={styles.companyId}>69635d93-560a-4161-8a46-67e4eb58c</Text>
+        </View>
+
+        {/* Menu */}
+        <View style={styles.menuContainer}>
+          <Text style={styles.sectionTitle}>Informações</Text>
+          <SettingsMenuItem
+            label="Meus dados"
+            icon={<User size={24} color={colors.text} />}
+            onPress={() => router.push('/(app)/settings/personal-data')} // Exemplo de rota
+          />
+          <SettingsMenuItem
+            label="Dados da empresa"
+            icon={<Buildings size={24} color={colors.text} />}
+            onPress={() => router.push('/(app)/settings/company-data')} // Exemplo de rota
+          />
+          <SettingsMenuItem
+            label="Taxas"
+            icon={<Percent size={24} color={colors.text} />}
+            onPress={() => router.push('/(app)/tax-calculator')} // Rota para tela de taxas
+          />
+          <SettingsMenuItem
+            label="Sair da conta"
+            icon={<SignOut size={24} color={colors.text} />}
+            onPress={() => { /* Lógica de Logout */ }}
+          />
+        </View>
       </ScrollView>
-    </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F4F7',
+  profileContainer: {
+    backgroundColor: colors.cardSecondaryBackground,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 40,
   },
-  header: {
-    backgroundColor: 'white',
-    padding: 16,
-    paddingTop: 50, // SafeArea
-    borderBottomWidth: 1,
-    borderBottomColor: '#EAECF0',
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: colors.iconBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerTitle: {
+  avatarText: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: colors.primary,
   },
-  section: {
-    marginTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#475467',
-    textTransform: 'uppercase',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  item: {
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EAECF0',
-  },
-  itemLast: {
-    borderBottomWidth: 0,
-  },
-  itemLeft: {
-    flex: 1,
-  },
-  itemTitle: {
+  companyName: {
     fontSize: 16,
-    color: '#101828',
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
   },
-  itemSubtitle: {
-    fontSize: 14,
-    color: '#475467',
-    marginTop: 2,
+  companyId: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
-}); 
+  menuContainer: {},
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 10,
+  },
+});

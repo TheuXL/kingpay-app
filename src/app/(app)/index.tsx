@@ -1,91 +1,108 @@
 import { useUserData } from '@/contexts/UserDataContext';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useMemo } from 'react';
-import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
+import { AppWindow, Barcode, Reply } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-// Importando TODOS os componentes da tela
+// Importando os componentes
 import ApprovalRateCarouselCard from '@/features/home/components/ApprovalRateCarouselCard';
+import BalanceCard from '@/features/home/components/BalanceCard';
 import CarouselContainer from '@/features/home/components/CarouselContainer';
-import ExploreCard from '@/features/home/components/ExploreCard';
-import HeaderUser from '@/features/home/components/HeaderUser';
+import Header from '@/features/home/components/Header';
 import JourneyCard from '@/features/home/components/JourneyCard';
+import MetricCard from '@/features/home/components/MetricCard';
 import PaymentMethodsCarouselCard from '@/features/home/components/PaymentMethodsCarouselCard';
 import QuickActions from '@/features/home/components/QuickActions';
 import RefundsCarouselCard from '@/features/home/components/RefundsCarouselCard';
-import RevenueChartCard from '@/features/home/components/RevenueChartCard';
-import SaldoCard from '@/features/home/components/SaldoCard';
-import SalesAnalysisCard from '@/features/home/components/SalesAnalysisCard';
-import SalesMetricsGrid from '@/features/home/components/SalesMetricsGrid';
+import SalesSummaryCard from '@/features/home/components/SalesSummaryCard';
 import TotalSalesCarouselCard from '@/features/home/components/TotalSalesCarouselCard';
 
+
 const HomeScreen = () => {
-    const { userProfile, company } = useUserData();
-    const isLoading = false;
-    const refreshData = () => {};
+    const { userProfile } = useUserData();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const refreshData = async () => {
+        setIsLoading(true);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsLoading(false);
+    };
 
     const userName = useMemo(() => {
         if (userProfile?.fullname) return userProfile.fullname.split(' ')[0];
-        if (userProfile?.email) return userProfile.email.split('@')[0];
         return 'Usuário';
     }, [userProfile]);
-
-    const mockDashboardData = {
-        taxaChargeback: 0.2,
-        approvalRateGrowthPercentage: -4.0,
-        sumPixPaid: 4580000,
-        salesGrowthPercentage: 12.8,
-        sumBoletoPaid: 2840000,
-    };
+    
+    const MOCK_BALANCE = 138241.45;
 
     return (
-        <LinearGradient colors={['#EAF1FB', '#FFFFFF']} style={styles.container}>
+        <View style={styles.container}>
             <SafeAreaView style={styles.flexOne}>
                 <ScrollView
                     contentContainerStyle={styles.content}
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refreshData} tintColor="#1A1AFF" />}
                 >
-                    <HeaderUser userName={userName} userPhoto={company?.logo_url} />
-                    <SaldoCard balance={13824115} />
+                    <Header userName={userName} /> 
+                    <BalanceCard balance={MOCK_BALANCE} />
                     <QuickActions />
                     <JourneyCard />
-                    
-                    <Text style={styles.sectionTitle}>Resumo de vendas</Text>
-                    <RevenueChartCard />
-                    <SalesAnalysisCard />
-                    
+                    <SalesSummaryCard />
+
                     <CarouselContainer>
                         <RefundsCarouselCard />
-                        <ApprovalRateCarouselCard />
-                        <TotalSalesCarouselCard />
                         <PaymentMethodsCarouselCard />
+                        <TotalSalesCarouselCard />
+                        <ApprovalRateCarouselCard />
                     </CarouselContainer>
 
                     <Text style={styles.sectionTitle}>Métricas de vendas</Text>
-                    <SalesMetricsGrid dashboardData={mockDashboardData} />
-
-                    <ExploreCard />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.metricsCarousel}>
+                        <MetricCard 
+                            icon={<AppWindow size={20} color="#666666" />}
+                            title="Vendas PIX"
+                            value="R$ 64.689,36"
+                            change="+15%"
+                        />
+                        <MetricCard 
+                            icon={<Reply size={20} color="#666666" />}
+                            title="Chargeback"
+                            value="R$ 4.689,36"
+                            change="+7,8%"
+                        />
+                        <MetricCard 
+                            icon={<Barcode size={20} color="#666666" />}
+                            title="Vendas Boletos"
+                            value="R$ 344.689,36"
+                            change="-23,8%"
+                        />
+                    </ScrollView>
                 </ScrollView>
             </SafeAreaView>
-        </LinearGradient>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: { 
+        flex: 1,
+        backgroundColor: '#F5F5F7',
+    },
     flexOne: { flex: 1 },
     content: {
-        paddingHorizontal: 16,
-        paddingTop: 24,
+        paddingTop: 16,
         paddingBottom: 40,
     },
     sectionTitle: {
-        fontSize: 22,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#333333',
-        marginTop: 32,
-        marginBottom: 16,
+        marginTop: 16,
+        marginBottom: 12,
+        paddingHorizontal: 20,
     },
+    metricsCarousel: {
+        paddingHorizontal: 20,
+    }
 });
 
-export default HomeScreen; 
+export default HomeScreen;

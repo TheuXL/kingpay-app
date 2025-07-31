@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, Eye } from 'lucide-react-native';
+import { Bell, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -13,9 +13,6 @@ const HeaderUser = () => {
       </TouchableOpacity>
       <View style={styles.rightSection}>
         <TouchableOpacity style={styles.iconButton}>
-          <Eye size={24} color="#6B6B6B" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
           <Bell size={24} color="#6B6B6B" />
         </TouchableOpacity>
       </View>
@@ -28,9 +25,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 20
+    paddingHorizontal: 0,
+    paddingTop: 60,
+    paddingBottom: 24
   },
   userButton: {
     flexDirection: 'row',

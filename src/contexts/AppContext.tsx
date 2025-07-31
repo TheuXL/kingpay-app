@@ -71,7 +71,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     checkAuth();
 
-    const { data: { subscription } } = authService.onAuthStateChange(handleAuthChange);
+    const authListener = authService.onAuthStateChange(handleAuthChange);
+    const subscription = authListener?.data?.subscription;
 
     return () => {
       if (subscription) {
@@ -83,11 +84,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     logger.auth('Iniciando processo de login', { email });
-    const { error } = await authService.signIn(email, password);
-    if (error) {
+    const { data, error } = await authService.signIn(email, password);
+    if (error || !data.session) {
         logger.error('Falha no login', error);
-        throw error;
+        // Garante que o estado seja limpo em caso de falha
+        await handleAuthChange('SIGNED_OUT', null);
+        throw error || new Error('Sessão não encontrada após o login.');
     }
+    
+    // O listener onAuthStateChange irá lidar com a atualização de estado,
+    // mas podemos chamar manualmente para uma atualização mais rápida da UI.
+    await handleAuthChange('SIGNED_IN', data.session);
   };
 
   const logout = async () => {

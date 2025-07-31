@@ -1,3 +1,4 @@
+// src/navigation/BottomTabBar.tsx
 import { useRouter, useSegments } from 'expo-router';
 import { BarChart2, Home, Settings } from 'lucide-react-native';
 import React from 'react';
@@ -5,45 +6,36 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const tabRoutes = [
     { name: 'Home', route: '/', icon: Home },
-    { name: 'Métricas', route: '/metricas', icon: BarChart2 },
+    { name: 'Métricas', route: '/dashboard', icon: BarChart2 }, // Rota de exemplo
     { name: 'Conta', route: '/conta', icon: Settings },
 ];
 
 const BottomTabBar = () => {
     const router = useRouter();
     const segments = useSegments();
-    const currentRoute = `/${segments.join('/') || ''}`.replace(/\/index$/, '/');
 
-    const isRouteActive = (route: string) => {
-        if (route === '/') return currentRoute === '/';
+    // Lógica para determinar a rota ativa. Ex: /(app)/index -> /
+    const currentRoute = '/' + (segments[segments.length - 1] || '');
+    const isActive = (route: string) => {
+        if (route === '/') return currentRoute === '/index' || currentRoute === '/';
         return currentRoute.startsWith(route);
     };
 
     return (
-        <View style={styles.navBarContainer}>
-            <View style={styles.navBar}>
-                {tabRoutes.map((tab, index) => {
-                    const isActive = isRouteActive(tab.route);
+        <View style={styles.container}>
+            <View style={styles.tabBar}>
+                {tabRoutes.map((tab) => {
+                    const active = isActive(tab.route);
                     const Icon = tab.icon;
 
-                    if (isActive) {
-                        return (
-                            <View key={tab.name} style={styles.activeTab}>
-                                <View style={styles.activeTabContent}>
-                                    <Icon color="#F9FAFC" size={24} />
-                                    <Text style={styles.activeTabText}>{tab.name}</Text>
-                                </View>
-                            </View>
-                        );
-                    }
-                    
                     return (
                         <TouchableOpacity
                             key={tab.name}
-                            style={styles.inactiveTab}
-                            onPress={() => router.push(tab.route)}
+                            style={active ? styles.activeButton : styles.inactiveButton}
+                            onPress={() => router.replace(tab.route)}
                         >
-                            <Icon color="#B0B0B0" size={24} />
+                            <Icon color={active ? '#FFFFFF' : '#8A8A8A'} size={24} />
+                            {active && <Text style={styles.activeButtonText}>{tab.name}</Text>}
                         </TouchableOpacity>
                     );
                 })}
@@ -53,55 +45,54 @@ const BottomTabBar = () => {
 };
 
 const styles = StyleSheet.create({
-    navBarContainer: {
+    container: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 94,
-        backgroundColor: '#F9FAFC',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        bottom: 20,
+        left: 20,
+        right: 20,
+        height: 60,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fundo com leve transparência
+        borderRadius: 30,
+        justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.1,
+        shadowRadius: 15,
+        elevation: 10,
+        // Efeito de vidro (requer bibliotecas adicionais como @react-native-community/blur)
+        // Por enquanto, usaremos uma cor semitransparente.
     },
-    navBar: {
+    tabBar: {
         flexDirection: 'row',
+        justifyContent: 'space-around',
         alignItems: 'center',
         width: '100%',
-        height: 54,
-        gap: 10,
+        paddingHorizontal: 8,
     },
-    activeTab: {
-        flex: 1, // Ocupa o espaço restante
-        height: 54,
-        backgroundColor: '#00051B',
-        borderRadius: 55,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 15,
-    },
-    activeTabContent: {
+    activeButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 2,
+        backgroundColor: '#0D0D26', // Azul bem escuro/preto
+        borderRadius: 25,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        gap: 8,
+        flex: 1, // Ocupa mais espaço
+        justifyContent: 'center',
     },
-    activeTabText: {
-        fontFamily: 'Inter',
-        fontWeight: '500',
-        fontSize: 14,
-        color: '#F9FAFC',
-        lineHeight: 21,
+    activeButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
-    inactiveTab: {
-        width: 56,
-        height: 54,
-        backgroundColor: '#F2F2F2',
-        borderRadius: 64,
+    inactiveButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 15,
+        backgroundColor: '#F0F0F0',
     },
 });
 

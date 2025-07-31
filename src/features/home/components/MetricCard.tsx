@@ -1,100 +1,75 @@
-import { ChevronDown, TrendingDown, TrendingUp } from 'lucide-react-native';
+// src/features/home/components/MetricCard.tsx
+import { ArrowDown, ArrowUp } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface MetricCardProps {
-  title: string;
-  value: string;
-  variation?: number;
+    icon: React.ReactNode;
+    title: string;
+    value: string;
+    change: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, variation }) => {
-    const isPositive = variation !== undefined && variation >= 0;
+const MetricCard = ({ icon, title, value, change }: MetricCardProps) => {
+    const isPositive = !change.startsWith('-');
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View style={styles.card}>
+            <View style={styles.titleContainer}>
+                {icon}
                 <Text style={styles.title}>{title}</Text>
-                <TouchableOpacity style={styles.periodButton}>
-                    <Text style={styles.periodText}>30 dias</Text>
-                    <ChevronDown size={16} color="#6B6B6B" />
-                </TouchableOpacity>
             </View>
-            <View style={styles.body}>
-                <Text style={styles.value}>{value}</Text>
-                {variation !== undefined && (
-                    <View style={styles.variationContainer}>
-                        {isPositive ? (
-                            <TrendingUp size={14} color="#00C48C" />
-                        ) : (
-                            <TrendingDown size={14} color="#FF647C" />
-                        )}
-                        <Text style={[
-                            styles.variationText,
-                            { color: isPositive ? '#00C48C' : '#FF647C' }
-                        ]}>
-                            {Math.abs(variation).toFixed(1)}%
-                        </Text>
-                    </View>
-                )}
+            <Text style={styles.value}>{value}</Text>
+            <View style={styles.changeContainer}>
+                {isPositive 
+                    ? <ArrowUp size={16} color="#2E7D32" /> 
+                    : <ArrowDown size={16} color="#D81B60" />}
+                <Text style={[styles.changeText, { color: isPositive ? '#2E7D32' : '#D81B60' }]}>
+                    {change}
+                </Text>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
+    card: {
+        width: 160,
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        borderRadius: 16,
         padding: 16,
+        marginRight: 12,
+        gap: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        elevation: 4,
-        flex: 1, // Para ocupar o espaço no grid
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 3,
     },
-    header: {
+    titleContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        gap: 8,
     },
     title: {
         fontSize: 14,
-        color: '#6B6B6B',
-    },
-    periodButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F5F6FA',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 8,
-    },
-    periodText: {
-        fontSize: 12,
-        color: '#333333',
-        marginRight: 4,
-    },
-    body: {
-        alignItems: 'flex-start',
+        color: '#666666',
+        fontWeight: '500',
     },
     value: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#000000',
-        marginBottom: 8,
+        color: '#333333',
     },
-    variationContainer: {
+    changeContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
     },
-    variationText: {
-        fontSize: 12,
+    changeText: {
+        fontSize: 14,
         fontWeight: '600',
     },
 });
 
-export default MetricCard; 
+export default MetricCard;

@@ -1,19 +1,26 @@
+// src/components/layout/ScreenContainer.tsx
 import React from 'react';
-import { View, StyleSheet, SafeAreaView, StyleProp, ViewStyle } from 'react-native';
-import { colors } from '@/theme/colors';
+import { SafeAreaView, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { colors } from '../../theme/colors';
 
-interface ScreenContainerProps {
+type ScreenContainerProps = {
   children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-}
+  style?: ViewStyle;
+  scrollable?: boolean;
+};
 
-export function ScreenContainer({ children, style }: ScreenContainerProps) {
+export const ScreenContainer = ({ children, style, scrollable = false }: ScreenContainerProps) => {
+  const Container = scrollable ? ScrollView : View;
+  const contentContainerStyle = scrollable ? styles.scrollContent : {};
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={[styles.container, style]}>{children}</View>
+      <Container style={[styles.container, style]} contentContainerStyle={contentContainerStyle}>
+        {children}
+      </Container>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -22,5 +29,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    paddingHorizontal: 24,
   },
-}); 
+  scrollContent: {
+    paddingBottom: 40,
+  },
+});

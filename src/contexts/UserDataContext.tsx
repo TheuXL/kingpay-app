@@ -1,4 +1,4 @@
-import React, { ReactNode, createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Company, UserProfile, userProfileService } from '../features/authentication/services/userProfileService';
 import { useAppContext } from './AppContext';
 
@@ -21,7 +21,7 @@ export const UserDataProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     setLoading(true);
     try {
-      const { profile, company } = await userProfileService.getUserProfileAndCompany(user.id);
+      const { profile, company } = (await userProfileService.getUserProfileAndCompany(user.id)) || {};
       setUserProfile(profile || null);
       setCompany(company || null);
     } catch (error) {
