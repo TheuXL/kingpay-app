@@ -38,6 +38,14 @@ const supabaseOptions: SupabaseClientOptions<'public'> = {
   },
 };
 
+// Validação das variáveis de ambiente
+if (!supabaseUrl || !supabaseAnonKey) {
+  const errorMessage = 'As variáveis de ambiente SUPABASE_URL e SUPABASE_ANON_KEY são obrigatórias.';
+  console.error('CRITICAL ERROR:', errorMessage);
+  // Em um app real, você poderia lançar um erro ou mostrar uma tela de erro para o usuário
+  throw new Error(errorMessage);
+}
+
 // Criar cliente Supabase
 export const supabaseClient = createClient(
   supabaseUrl,
@@ -54,19 +62,7 @@ console.log('🚀 Supabase Client inicializado:', {
   platform: ENV.platform
 });
 
-// Verificar conectividade na inicialização
-supabaseClient.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.warn('⚠️ Erro ao verificar sessão inicial:', error.message);
-  } else if (data.session) {
-    console.log('✅ Sessão ativa encontrada na inicialização:', {
-      userId: data.session.user.id,
-      email: data.session.user.email
-    });
-  } else {
-    console.log('ℹ️ Nenhuma sessão ativa na inicialização');
-  }
-});
+// A verificação da sessão agora é centralizada no AppContext para evitar redundância.
 
 // Adiciona um listener para o estado do app para reconectar o Realtime
 // Ajuda a evitar problemas de token expirado após o app ficar em segundo plano
