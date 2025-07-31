@@ -1,18 +1,17 @@
 import { useRouter, useSegments } from 'expo-router';
-import { Home, Trophy, User } from 'lucide-react-native';
+import { BarChart2, Home, Settings } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const tabRoutes = [
     { name: 'Home', route: '/', icon: Home },
-    { name: 'Jornada', route: '/jornada', icon: Trophy },
-    { name: 'Conta', route: '/conta', icon: User },
+    { name: 'Métricas', route: '/metricas', icon: BarChart2 },
+    { name: 'Conta', route: '/conta', icon: Settings },
 ];
 
 const BottomTabBar = () => {
     const router = useRouter();
     const segments = useSegments();
-    // Normaliza a rota atual para lidar com a rota raiz
     const currentRoute = `/${segments.join('/') || ''}`.replace(/\/index$/, '/');
 
     const isRouteActive = (route: string) => {
@@ -21,21 +20,30 @@ const BottomTabBar = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.tabBar}>
-                {tabRoutes.map((tab) => {
+        <View style={styles.navBarContainer}>
+            <View style={styles.navBar}>
+                {tabRoutes.map((tab, index) => {
                     const isActive = isRouteActive(tab.route);
                     const Icon = tab.icon;
+
+                    if (isActive) {
+                        return (
+                            <View key={tab.name} style={styles.activeTab}>
+                                <View style={styles.activeTabContent}>
+                                    <Icon color="#F9FAFC" size={24} />
+                                    <Text style={styles.activeTabText}>{tab.name}</Text>
+                                </View>
+                            </View>
+                        );
+                    }
+                    
                     return (
                         <TouchableOpacity
                             key={tab.name}
-                            style={[styles.tabItem, isActive && styles.activeTabItem]}
+                            style={styles.inactiveTab}
                             onPress={() => router.push(tab.route)}
                         >
-                            <Icon color={isActive ? '#FFFFFF' : '#7B7BFF'} size={24} />
-                            <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                                {tab.name}
-                            </Text>
+                            <Icon color="#B0B0B0" size={24} />
                         </TouchableOpacity>
                     );
                 })}
@@ -45,53 +53,56 @@ const BottomTabBar = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
+    navBarContainer: {
         position: 'absolute',
-        bottom: 10, // Adiciona um respiro na parte inferior
-        left: 16,
-        right: 16,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 94,
+        backgroundColor: '#F9FAFC',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
         alignItems: 'center',
     },
-    tabBar: {
+    navBar: {
         flexDirection: 'row',
-        backgroundColor: '#FFFFFF', // Fundo branco
-        borderRadius: 99, // Cantos totalmente arredondados
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        justifyContent: 'space-around',
         alignItems: 'center',
         width: '100%',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
-        elevation: 10,
+        height: 54,
+        gap: 10,
     },
-    tabItem: {
-        flex: 1,
+    activeTab: {
+        flex: 1, // Ocupa o espaço restante
+        height: 54,
+        backgroundColor: '#00051B',
+        borderRadius: 55,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 15,
+    },
+    activeTabContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 99,
-        gap: 8, // Espaço entre ícone e texto
-    },
-    activeTabItem: {
-        backgroundColor: '#1A1AFF', // Fundo azul para o item ativo
-    },
-    tabText: {
-        color: '#7B7BFF', // Azul claro para texto inativo
-        fontSize: 14,
-        fontWeight: '500',
+        gap: 2,
     },
     activeTabText: {
-        color: '#FFFFFF', // Texto branco para o item ativo
-        fontWeight: 'bold',
+        fontFamily: 'Inter',
+        fontWeight: '500',
+        fontSize: 14,
+        color: '#F9FAFC',
+        lineHeight: 21,
+    },
+    inactiveTab: {
+        width: 56,
+        height: 54,
+        backgroundColor: '#F2F2F2',
+        borderRadius: 64,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 15,
     },
 });
 
-export default BottomTabBar; 
+export default BottomTabBar;

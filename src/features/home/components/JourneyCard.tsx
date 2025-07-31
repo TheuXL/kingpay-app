@@ -1,26 +1,36 @@
-import { Trophy } from 'lucide-react-native';
+import { ChevronRight, Trophy } from 'lucide-react-native';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const JourneyCard = () => {
-  const progress = 75; // Exemplo de progresso
+  const currentAmount = 8974;
+  const goalAmount = 10000;
+  const progress = (currentAmount / goalAmount) * 100;
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container}>
       <View style={styles.iconContainer}>
-        <Trophy size={28} color="#1A1AFF" />
+        <Trophy size={28} color="#FFFFFF" />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>Jornada KingPay</Text>
-        <Text style={styles.subtitle}>Receba recompensas pelo desempenho</Text>
-        <View style={styles.progressRow}>
-          <View style={styles.progressBarBackground}>
-            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
-          </View>
-          <Text style={styles.progressText}>{progress}%</Text>
+        <Text style={styles.progressValue}>
+          R$ {formatCurrency(currentAmount)} /{' '}
+          <Text style={styles.goalValue}>{formatCurrency(goalAmount)}</Text>
+        </Text>
+        <View style={styles.progressBarBackground}>
+          <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
         </View>
       </View>
-    </View>
+      <ChevronRight size={24} color="#1313F2" />
+    </TouchableOpacity>
   );
 };
 
@@ -28,12 +38,25 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EAF1FB', // Fundo azul-claro
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
-    marginVertical: 12, // Espaçamento entre seções
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#1313F2',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
   textContainer: {
@@ -41,37 +64,29 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#333333',
+    marginBottom: 4,
   },
-  subtitle: {
+  progressValue: {
     fontSize: 14,
-    color: '#6B6B6B',
-    marginTop: 2,
-    marginBottom: 12,
+    color: '#333333',
+    marginBottom: 8,
   },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  goalValue: {
+    color: '#6B6B6B',
   },
   progressBarBackground: {
-    flex: 1,
     height: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#EAEBF1',
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#1A1AFF',
+    backgroundColor: '#1313F2',
     borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1A1AFF',
-    marginLeft: 8,
   },
 });
 
-export default JourneyCard; 
+export default JourneyCard;

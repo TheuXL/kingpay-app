@@ -1,38 +1,22 @@
-import { Bell, ChevronRight, Eye, HelpCircle } from 'lucide-react-native';
+import { Bell, ChevronRight, Eye } from 'lucide-react-native';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-interface HeaderUserProps {
-  userName: string;
-  userPhoto?: string;
-}
-
-const HeaderUser: React.FC<HeaderUserProps> = ({ userName, userPhoto }) => {
+const HeaderUser = () => {
   return (
     <View style={styles.container}>
-      <View style={styles.leftSection}>
-        <View style={styles.avatarContainer}>
-          {userPhoto ? (
-            <Image source={{ uri: userPhoto }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>{userName[0]?.toUpperCase()}</Text>
-            </View>
-          )}
-        </View>
+      <TouchableOpacity style={styles.userButton}>
         <Text style={styles.greetingText}>
-          Olá, <Text style={styles.userName}>{userName}!</Text>
+          Olá, <Text style={styles.userName}>Gabriel!</Text>
         </Text>
-      </View>
+        <ChevronRight size={20} color="#1A1AFF" />
+      </TouchableOpacity>
       <View style={styles.rightSection}>
         <TouchableOpacity style={styles.iconButton}>
-          <Eye size={20} color="#6B6B6B" />
+          <Eye size={24} color="#6B6B6B" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton}>
-          <HelpCircle size={20} color="#6B6B6B" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navigationButton}>
-          <ChevronRight size={20} color="#6B6B6B" />
+          <Bell size={24} color="#6B6B6B" />
         </TouchableOpacity>
       </View>
     </View>
@@ -44,11 +28,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20
+  },
+  userButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 12,
+    borderRadius: 20,
+    paddingVertical: 8,
     paddingHorizontal: 16,
-    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -58,35 +48,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  leftSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  avatarContainer: {
-    marginRight: 12,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1A1AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   greetingText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#6B6B6B',
+    marginRight: 4,
   },
   userName: {
     fontWeight: 'bold',
@@ -98,11 +63,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 8,
-  },
-  navigationButton: {
-    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 4,
   },
 });
 
-export default HeaderUser; 
+export default HeaderUser;

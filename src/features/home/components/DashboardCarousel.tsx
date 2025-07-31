@@ -6,8 +6,8 @@ import RefundsCard from './RefundsCard';
 import TotalSalesCard from './TotalSalesCard';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.9;
-const SPACING = (width - CARD_WIDTH) / 2;
+const CARD_WIDTH = Math.min(width * 0.88, 350);
+const SPACING = 16;
 
 interface DashboardCarouselProps {
   data: any; // O objeto `additionalInfo` vindo do hook
@@ -16,9 +16,8 @@ interface DashboardCarouselProps {
 const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Fallback para caso os dados não cheguem
   if (!data) {
-    return null; // Ou um loader/skeleton
+    return null;
   }
 
   // Extrai os dados necessários para cada card
@@ -33,15 +32,15 @@ const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
   const approvalRateData = data.approvalRates;
 
   const cardData = [
-    { type: 'refunds', data: refundsData },
     { type: 'payment', data: paymentMethodsData },
-    { type: 'sales', data: totalSalesData },
+    { type: 'refunds', data: refundsData },
     { type: 'approval', data: approvalRateData },
+    { type: 'sales', data: totalSalesData },
   ];
 
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / CARD_WIDTH);
+    const index = Math.round(contentOffset / (CARD_WIDTH + SPACING));
     if (index !== activeIndex) {
       setActiveIndex(index);
     }
@@ -55,9 +54,9 @@ const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
         onScroll={onScroll}
         scrollEventThrottle={16}
         decelerationRate="fast"
-        snapToInterval={CARD_WIDTH + (SPACING / 2)}
-        contentOffset={{ x: -SPACING, y: 0 }}
+        snapToInterval={CARD_WIDTH + SPACING}
         contentContainerStyle={styles.carousel}
+        style={{ flexGrow: 0 }}
       >
         {cardData.map((item, index) => (
           <View key={index} style={styles.cardContainer}>
@@ -83,28 +82,33 @@ const DashboardCarousel: React.FC<DashboardCarouselProps> = ({ data }) => {
 const styles = StyleSheet.create({
   container: {
     marginTop: 16,
+    alignItems: 'center',
+    width: '100%',
   },
   carousel: {
-    paddingHorizontal: SPACING / 2,
+    paddingHorizontal: 0,
+    alignItems: 'center',
   },
   cardContainer: {
     width: CARD_WIDTH,
-    marginHorizontal: SPACING / 4,
+    marginHorizontal: SPACING / 2,
+    backgroundColor: 'transparent',
   },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: 18,
+    alignItems: 'center',
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D1D5DB',
-    marginHorizontal: 4,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 5,
   },
   dotActive: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#1313F2',
   },
 });
 

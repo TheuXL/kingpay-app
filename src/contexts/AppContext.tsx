@@ -69,11 +69,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // Força o logout no início para limpar qualquer sessão salva.
-    // Isso garante que o app sempre comece na tela de login.
-    authService.signOut();
+    checkAuth();
 
-    // Configura o listener para responder a eventos futuros (login/logout manual).
     const { data: { subscription } } = authService.onAuthStateChange(handleAuthChange);
 
     return () => {

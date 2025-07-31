@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
-import { ArrowRightLeft, Landmark, Link, Wallet } from 'lucide-react-native';
+import { AppWindow, ArrowRightLeft, Link, Wallet } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 
 const QuickActions = () => {
     const router = useRouter();
@@ -21,12 +20,12 @@ const QuickActions = () => {
         {
           icon: Link,
           label: 'Link de Pagamento',
-          onPress: () => console.log('Link Pressionado'),
+          onPress: () => router.push('/links'),
         },
         {
-          icon: Landmark, // Ícone para Pix
+          icon: AppWindow,
           label: 'Área Pix',
-          onPress: () => console.log('Pix Pressionado'),
+          onPress: () => router.push('/pix-keys'),
         },
       ];
 
@@ -41,7 +40,7 @@ const QuickActions = () => {
             onPress={action.onPress}
           >
             <View style={styles.iconContainer}>
-              <Icon color="#1A1AFF" size={24} />
+              <Icon color="#1313F2" size={28} />
             </View>
             <Text style={styles.actionLabel}>{action.label}</Text>
           </TouchableOpacity>
@@ -54,36 +53,37 @@ const QuickActions = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // Para distribuir os 4 botões
-    alignItems: 'center',
-    marginVertical: 32,
-    paddingHorizontal: 16,
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
+    paddingHorizontal: 10,
   },
   actionButton: {
     alignItems: 'center',
+    maxWidth: 80, 
   },
   iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
     elevation: 4,
   },
   actionLabel: {
     fontSize: 14,
     color: '#333333',
     fontWeight: '500',
+    textAlign: 'center',
   },
 });
 
-export default QuickActions; 
+export default QuickActions;

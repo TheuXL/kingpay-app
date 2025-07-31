@@ -1,12 +1,12 @@
-import { ArrowRight } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const Bar = ({ label, value, color, height }: { label: string, value: string, color: string, height: number }) => (
-    <View style={styles.barGroup}>
+const Bar = ({ label, value, color, height, align = 'center' }: { label: string, value: string, color: string, height: number, align?: 'center' | 'flex-start' | 'flex-end' }) => (
+    <View style={[styles.barGroup, { alignItems: align }]}>
+        <View style={[styles.bar, { backgroundColor: color, height }]} />
         <Text style={styles.barLabel}>{label}</Text>
         <Text style={styles.barValue}>{value}</Text>
-        <View style={[styles.bar, { backgroundColor: color, height }]} />
     </View>
 );
 
@@ -20,14 +20,14 @@ const SalesAnalysisCard = () => {
                 </View>
                 <TouchableOpacity style={styles.periodButton}>
                     <Text style={styles.periodText}>7 dias</Text>
-                    <ArrowRight size={16} color="#333333" />
+                    <ChevronRight size={18} color="#333333" />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.chartContainer}>
-                <Bar label="Vendas" value="R$ 3.724,23" color="#1A1AFF" height={120} />
-                <Bar label="Pendentes" value="4.123,11" color="#FFA366" height={80} />
-                <Bar label="Estornos" value="2.864,23" color="#FF5A5F" height={60} />
+                <Bar label="Vendas" value="R$ 3.724,23" color="#1313F2" height={150} align="flex-start" />
+                <Bar label="Pendentes" value="4.123,11" color="#FF8C42" height={80} />
+                <Bar label="Estornos" value="2.864,23" color="#E54D4D" height={60} align="flex-end" />
             </View>
         </View>
     );
@@ -36,20 +36,19 @@ const SalesAnalysisCard = () => {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 24,
         padding: 24,
-        marginVertical: 12,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 5,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 24,
+        alignItems: 'center',
+        marginBottom: 32,
     },
     title: {
         fontSize: 16,
@@ -66,39 +65,38 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#F5F6FA',
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 16,
+        paddingVertical: 10,
+        borderRadius: 20,
     },
     periodText: {
         fontSize: 14,
         fontWeight: '500',
         color: '#333333',
-        marginRight: 8,
+        marginRight: 6,
     },
     chartContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'space-between',
         alignItems: 'flex-end',
-        height: 160, // Altura para acomodar barras e legendas
+        height: 200,
     },
     barGroup: {
-        alignItems: 'center',
         flex: 1,
     },
     barLabel: {
         fontSize: 14,
         color: '#666666',
+        marginTop: 8,
     },
     barValue: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#000000',
-        marginVertical: 4,
+        marginTop: 4,
     },
     bar: {
-        width: 48,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        width: '80%',
+        borderRadius: 16,
     },
 });
 

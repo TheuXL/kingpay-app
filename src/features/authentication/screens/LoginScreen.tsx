@@ -43,70 +43,68 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <KingPayLogo width={90} height={18} />
-          </View>
-
-          <View style={styles.taglineContainer}>
+          <View style={styles.centeredContent}>
+            <View style={{ marginBottom: 32 }}>
+              <KingPayLogo width={120} height={24} />
+            </View>
             <Text style={styles.taglineText}>
               Tudo que seu negócio precisa, em um só lugar.
             </Text>
-          </View>
 
-          <View style={styles.formContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.textInput}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="seuemail@exemplo.com"
-                  placeholderTextColor="#9E9E9E"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
+            <View style={styles.formContainer}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.textInput}
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="seuemail@exemplo.com"
+                    placeholderTextColor="#B0B0B0"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
               </View>
-            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Senha</Text>
-              <View style={styles.passwordInputWrapper}>
-                <TextInput
-                  style={styles.textInput}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Sua senha"
-                  placeholderTextColor="#9E9E9E"
-                  secureTextEntry={!isPasswordVisible}
-                />
-                <TouchableOpacity onPress={() => setPasswordVisible(!isPasswordVisible)}>
-                  <Eye color="#5B5B5B" size={22} />
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Senha</Text>
+                <View style={styles.passwordInputWrapper}>
+                  <TextInput
+                    style={styles.textInput}
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Sua senha"
+                    placeholderTextColor="#B0B0B0"
+                    secureTextEntry={!isPasswordVisible}
+                  />
+                  <TouchableOpacity onPress={() => setPasswordVisible(!isPasswordVisible)}>
+                    <Eye color="#8C8C8C" size={22} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.rememberAccessContainer}>
+                <TouchableOpacity
+                  style={[styles.checkboxBase, rememberMe && styles.checkboxChecked]}
+                  onPress={() => setRememberMe(!rememberMe)}
+                  activeOpacity={0.8}
+                >
+                  {rememberMe && <View style={styles.checkboxInner} />}
                 </TouchableOpacity>
+                <Text style={styles.rememberLabel}>Lembrar acesso</Text>
               </View>
-            </View>
 
-            <View style={styles.rememberAccessContainer}>
-              <Text style={styles.rememberLabel}>Lembrar acesso</Text>
-              <TouchableOpacity
-                style={[styles.checkboxBase, rememberMe && styles.checkboxChecked]}
-                onPress={() => setRememberMe(!rememberMe)}
-              >
-                {rememberMe && <View style={styles.checkboxInner} />}
+              <TouchableOpacity style={styles.loginButton} onPress={handleLoginSubmit} disabled={isLoading}>
+                <Text style={styles.loginButtonText}>{isLoading ? 'Entrando...' : 'Fazer login'}</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => router.push('/(auth)/forgot-password')}>
+                <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+              </TouchableOpacity>
+
+              {error && <Text style={styles.errorText}>{error}</Text>}
             </View>
-          </View>
-
-          <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.loginButton} onPress={handleLoginSubmit} disabled={isLoading}>
-              <Text style={styles.loginButtonText}>{isLoading ? 'Entrando...' : 'Fazer login'}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => router.push('/(auth)/forgot-password')}>
-              <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
-            </TouchableOpacity>
-            
-            {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -119,104 +117,126 @@ const windowWidth = Dimensions.get('window').width;
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#F8F9FE', // Fundo lavanda claro
+    backgroundColor: '#F4F5F7',
   },
   scrollContainer: {
     flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
     paddingBottom: 40,
+    minHeight: '100%',
   },
-  header: {
-    paddingTop: 40,
-    alignItems: 'flex-start',
+  centeredContent: {
+    width: '100%',
+    maxWidth: 350,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 32,
+    marginBottom: 32,
   },
-  taglineContainer: {
-    marginTop: 48,
-    marginBottom: 60,
+  logo: {
+    marginBottom: 32,
   },
   taglineText: {
-    fontSize: 40,
-    lineHeight: 52,
-    color: '#7575B3',
-    fontWeight: '400',
+    fontFamily: 'Inter',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#8C8C8C',
+    textAlign: 'center',
+    marginBottom: 40,
   },
   formContainer: {
     width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
+    fontFamily: 'Inter',
     fontWeight: '500',
-    fontSize: 16,
-    color: '#333333',
-    marginBottom: 12,
+    fontSize: 14,
+    color: '#8C8C8C',
+    marginBottom: 8,
   },
   inputWrapper: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F5F7',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E5E7EB',
     borderRadius: 12,
-    height: 56,
+    height: 48,
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
   passwordInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F5F7',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E5E7EB',
     borderRadius: 12,
-    height: 56,
+    height: 48,
     paddingHorizontal: 16,
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#333333',
+    fontFamily: 'Inter',
+    fontSize: 15,
+    color: '#00051B',
   },
   rememberAccessContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 8,
-    marginBottom: 40,
+    marginBottom: 24,
+    alignSelf: 'flex-start',
   },
   rememberLabel: {
-    fontSize: 16,
-    color: '#333333',
+    fontFamily: 'Inter',
     fontWeight: '500',
+    fontSize: 14,
+    color: '#8C8C8C',
+    marginLeft: 10,
   },
   checkboxBase: {
-    width: 26,
-    height: 26,
+    width: 22,
+    height: 22,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#B0B0B0',
     borderRadius: 6,
+    backgroundColor: '#FFF',
   },
   checkboxChecked: {
-    backgroundColor: '#1A1AFF',
-    borderColor: '#1A1AFF',
+    backgroundColor: '#1313F2',
+    borderColor: '#1313F2',
   },
   checkboxInner: {
-    // Para um checkmark, você pode usar um ícone ou uma View estilizada
-  },
-  buttonsContainer: {
-    width: '100%',
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+    backgroundColor: '#FFF',
   },
   loginButton: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    height: 54,
-    backgroundColor: '#1A1AFF',
-    borderRadius: 27,
+    height: 48,
+    backgroundColor: '#1313F2',
+    borderRadius: 24,
     marginBottom: 16,
   },
   loginButtonText: {
+    fontFamily: 'Inter',
     fontWeight: '600',
     fontSize: 16,
     color: '#FFFFFF',
@@ -225,16 +245,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    height: 54,
+    height: 48,
     borderWidth: 1,
-    borderColor: '#D3DFFF', // Borda azul clara
-    backgroundColor: '#F8F9FE',
-    borderRadius: 27,
+    borderColor: '#D3DFFF',
+    backgroundColor: '#F4F5F7',
+    borderRadius: 24,
+    marginBottom: 0,
   },
   forgotPasswordText: {
+    fontFamily: 'Inter',
     fontWeight: '600',
     fontSize: 16,
-    color: '#1A1AFF',
+    color: '#1313F2',
   },
   errorText: {
     color: 'red',
